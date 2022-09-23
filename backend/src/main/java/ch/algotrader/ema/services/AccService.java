@@ -38,6 +38,8 @@ public class AccService {
     private static final String MARKET = "MARKET";
     private static final String RESULT = "RESULT";
 
+    @Value("${quantity}")
+    private String quantity;
     @Value("${recv-window}")
     private String recvWindow;
     @Value("${rest-uri}")
@@ -82,7 +84,7 @@ public class AccService {
         return body;
     }
 
-    public OrderResult sendOrder(String side, BigDecimal quantity, String symbol) throws IOException {
+    public OrderResult sendOrder(String side, BigDecimal quoteOrderQty, String symbol) throws IOException {
         // if initFromCsv return
         long time = new Date().getTime();
 
@@ -100,7 +102,8 @@ public class AccService {
                 .append("&")
                 .append("side=").append(side)
                 .append("&")
-                .append("quantity=").append(quantity)
+//                .append("quantity=").append(quantity)
+                .append("quoteOrderQty=").append(quoteOrderQty)
                 .append("&")
                 .append("symbol=").append(symbol.toUpperCase(Locale.ROOT))
                 .append("&")
@@ -234,4 +237,23 @@ public class AccService {
         }
     }
 
+    public String saveProps(Map<String, Object> props) {
+        // todo save temp
+        apiKey = props.get("api-key").toString();
+        apiSecret = props.get("api-secret").toString();
+        baseUrl = props.get("rest-uri").toString();
+        quantity = props.get("position-entry").toString();
+
+        return Boolean.TRUE.toString();
+    }
+
+    public Map<String, Object> getProps() {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("api-key", apiKey);
+        map.put("api-secret", apiSecret);
+        map.put("rest-uri", baseUrl);
+        map.put("position-entry", quantity);
+
+        return map;
+    }
 }

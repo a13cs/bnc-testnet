@@ -1,31 +1,51 @@
-<div style="padding: 10px">
-  <button (click)="getJar()">
-    Get jar
-  </button>
-</div>
-<!--<div>-->
-<!--  <button>-->
-<!--    Add API KEY-->
-<!--  </button>-->
-<!--</div>-->
+<div style="padding: 10px" class="toolbar" role="banner">
+  <dialog-overview-example></dialog-overview-example>
 
-<h2> Lightweight-Charts </h2>
-<!--<span> Balance: {{balance | json}} </span>-->
-<div>
-    <h3>Acc type {{ acc.accountType }}</h3>
-    <h4 *ngFor="let b of balances">Asset {{ b.asset }} &nbsp; {{ b.free }} </h4>
-</div>
-<br>
-<div style="padding: 10px">
-  <button (click)="showTrades = !showTrades">
-    {{showTrades ? 'Hide' : 'Show'}} Trades
-  </button>
-  <div *ngIf="showTrades">
-<!--    table-->
-    <h5 *ngFor="let t of myTrades">
-      Symbol {{ t.symbol }} &nbsp;
-      Time {{ t.time }} &nbsp;
-      QuoteQty {{ t.quoteQty }}
-    </h5>
+  <div>
+    <a href="http://{{ jarLocation }}/jar" target="_blank">
+      Get JAR
+    </a>
   </div>
 </div>
+
+<!--  add buy/sell -->
+<div>
+  <div>
+    <button (click)="buy(inb.value)" style="color: green">
+      BUY
+    </button>
+    <input type="text" value="0" #inb style="width: 50px">
+  </div>
+  <div>
+    <button (click)="sell(ins.value)" style="color: red">
+      SELL
+    </button>
+    <input type="text" value="0" #ins style="width: 50px">
+  </div>
+
+</div>
+
+<div>
+  <h2> Lightweight-Charts </h2>
+  <!--<span> Balance: {{balance | json}} </span>-->
+  <div>
+      <h4>Acc type:&nbsp;</h4><h3>  {{ acc.accountType }}</h3>
+      <h4 *ngFor="let b of balances">Asset {{ b.asset }} &nbsp; {{ b.free }} </h4>
+  </div>
+  <br>
+  <div style="padding: 10px">
+    <button (click)="showTrades = !showTrades">
+      {{showTrades ? 'Hide' : 'Show'}} Trades
+    </button>
+    <div *ngIf="showTrades">
+  <!--    table-->
+      <h5 *ngFor="let t of myTrades">
+        Symbol {{ t.symbol }} &nbsp;
+        Time {{ t.time }} &nbsp;
+        QuoteQty {{ t.quoteQty }}
+      </h5>
+    </div>
+  </div>
+</div>
+
+

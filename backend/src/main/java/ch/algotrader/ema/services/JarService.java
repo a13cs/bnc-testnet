@@ -21,13 +21,13 @@ public class JarService {
 
     private static final Logger logger = LoggerFactory.getLogger(AccService.class);
 
-    public byte[] getUpdatedJar(Map<String, String> props) throws IOException {
+    public byte[] getUpdatedJar(Map<String, Object> props) throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream("/java-basic.jar");
 
         return updateZipFile(inputStream, props, "application.properties");
     }
 
-    public static byte[] updateZipFile(InputStream is, Map<String, String> map, String newEntryName) throws IOException {
+    public static byte[] updateZipFile(InputStream is, Map<String, Object> map, String newEntryName) throws IOException {
         ByteArrayOutputStream o = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
 

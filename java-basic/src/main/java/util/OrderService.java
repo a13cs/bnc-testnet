@@ -30,11 +30,10 @@ import java.util.stream.Collectors;
 
 public class OrderService {
 
+    // todo
+    private static final String TYPE = "SPOT"; // MARGIN
     private static BigDecimal reverseOrderQuantity = BigDecimal.valueOf(0);
     private static boolean inTrade = false;
-//    private static final AtomicInteger extraCount = new AtomicInteger(0);
-//    private static final int maxExtraEntry = 3;
-    //    private static final List<ExtraOrder> extraOrders = new LinkedList<>();
 
     private final HashMap<String, String> props = new HashMap<>();
 

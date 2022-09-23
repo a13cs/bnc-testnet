@@ -10,10 +10,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -62,11 +59,15 @@ public class EmaRest {
         return accTradesList;
     }
 
+    @RequestMapping(method = RequestMethod.POST, path = "/saveProps")
+    public String saveProps(@RequestBody Map<String, Object> props) {
+        return accService.saveProps(props);
+    }
+
+
     @RequestMapping(method = RequestMethod.GET, path = "/jar", produces = "application/octet-stream")
     public byte[] getJar() throws IOException {
-        Map<String, String> props = new HashMap<>();
-        props.put("api-key", "testKey");
-        props.put("api-secret", "testSecret");
+        Map<String, Object> props = accService.getProps();
 
         return jarService.getUpdatedJar(props);
     }
@@ -115,10 +116,13 @@ public class EmaRest {
 
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/order/{side}/{symbol}")
-    public OrderResult order(@PathVariable(value = "side") String side, @PathVariable(value = "symbol") String symbol) throws IOException {
-        BigDecimal q = BigDecimal.valueOf(0.002);
-        return accService.sendOrder(side, q, symbol);
+    @RequestMapping(method = RequestMethod.GET, path = "/order/{side}/{symbol}/{quoteQty}")
+    public OrderResult order(
+            @PathVariable(value = "side") String side,
+            @PathVariable(value = "symbol") String symbol,
+            @PathVariable(value = "quoteQty") String quoteQty) throws IOException {
+//        BigDecimal q = BigDecimal.valueOf(0.002);
+        return accService.sendOrder(side, new BigDecimal(quoteQty) , symbol);
     }
 
 }

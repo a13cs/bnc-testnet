@@ -8,17 +8,11 @@ import {HttpClient} from "@angular/common/http";
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  proxyConf = false
-
 
   title = 'app';
-  indicatorVisible = false
 
-  smaLineSecond: any
-  smaLineFirst: any
-  closeLine: any
+  jarLocation = 'localhost:8080'
 
-  csvTimestamp: any
   data: any[] = []
   series: any = []
 
@@ -27,44 +21,23 @@ export class AppComponent implements OnInit {
   myTrades: any [] = [];
   showTrades: boolean = false
 
-  lastBar: any;
-  barDuration: number = 1;
+  proxyConf = false
   prefix = this.proxyConf ? '/be' : ''
 
   constructor(private http: HttpClient) {
   }
 
-  getJar() {
-    this.http.get<Acc>(this.prefix + '/jar').subscribe( d => {
-//       console.log(d)
-
-    })
-
+  buy(value? : any) {
+    console.log(value)
+    this.http.get<any[]>(this.prefix + '/order/BUY/BTCUSDT/' + value ).subscribe( d => console.log(d) )
   }
 
-//   showIndicator(show: boolean, emaLength: string /*short/long*/){
-//     this.indicatorVisible = show
-//     if(!show) {
-//       (<ISeriesApi<"Line">>this.smaLineSecond).setData([])
-//     } else {
-//       this.http.get<any[]>(this.prefix + '/indicator/' + emaLength + '/0/'+this.csvTimestamp).subscribe(
-//         d => {
-//           console.log(d)
-//
-//           let indicatorData: any[] = []
-//           for (let i = 1; i < this.data.length; i++) {
-//             indicatorData.push({time: +this.data[i].time /*startTime*/ as UTCTimestamp, value: +d[i] | this.data[i].close})
-//           }
-//           this.smaLineSecond.setData(indicatorData)
-//         }
-//       );
-//     }
-//   }
+  sell(value? : any) {
+    console.log(value)
+    this.http.get<any[]>(this.prefix + '/order/SELL/BTCUSDT/' + value ).subscribe( d => console.log(d) )
+  }
 
   ngOnInit(): void {
-//     this.getBarDuration()
-
-    // create charts
 
     const chart = createChart(document.body, {
       width: 900,
@@ -159,11 +132,6 @@ export class AppComponent implements OnInit {
 //       lineWidth: 2,
 //     });
 
-    //  ===============================================================================
-
-    // load data
-
-    this.getData()
 
     this.http.get<Acc>(this.prefix + '/acc').subscribe( d => {
       this.acc = d
@@ -171,56 +139,7 @@ export class AppComponent implements OnInit {
       this.balances = d.balances.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
     })
 
-
-/*
-    // this.http.get<any[]>(prefix + '/acc').subscribe(
-    this.http.get<any[]>('/acc').subscribe(
-      d => {
-        // let data : any = Object.keys(d)
-        console.log("BTC SPOT Balance: " + JSON.stringify(d))
-        this.balance = d;
-      }
-    )
-*/
-
-
-    // TODO: wss
-//   setInterval(() => this.http.get<any>(this.prefix + '/lastTrade').subscribe(
-//     price => {
-//       console.log("Price: " + price)
-//       let now = new Date().getTime() / 1000
-//
-//       // console.log(now)
-//       // console.log(this.lastBar.time)
-//
-//       let endBarDiff = Math.round(now - this.lastBar?.time );
-//       console.log("EndBarDiff: " + endBarDiff);
-//
-//       if(endBarDiff > this.barDuration) {
-//         this.getData()
-//         console.log(this.lastBar);
-//
-//         return;
-//         // todo: update() with new bar
-//       }
-//
-//       if (this.lastBar?.time) (<ISeriesApi<"Candlestick">>this.series).update({
-//           time: this.lastBar.time,
-//           open: this.lastBar.open,
-//           high: +price > this.lastBar.high ? +price : this.lastBar.high,
-//           low: +price < this.lastBar.low ? +price : this.lastBar.low,
-//           close: +price
-//         })
-//     }), 1_000)
-//
-  }
-
-//   getBarDuration() {
-//     this.http.get<any>(this.prefix + "/barDuration").subscribe(
-//       duration => this.barDuration = duration)
-//   }
-
-  getData() {
+//   getData() {
     let start = new Date(Date.UTC(2022, 8, 20, 0, 0, 0, 0)).getTime() // 1000
     let end = new Date(Date.UTC(2022, 9, 1, 0, 0, 0, 0)).getTime() // 1000
     console.log("start: " + start)
@@ -230,24 +149,10 @@ export class AppComponent implements OnInit {
     this.http.get<any[]>(this.prefix + '/klines/' + start + '/' + end + '/' + interval).subscribe(
       d => {
         let lineData: any[] = []
-        // console.log("bars: " + JSON.stringify(d))
 
-        this.csvTimestamp = d.slice(0,1)[0][0];
-        console.log("csvTimestamp: " + this.csvTimestamp)
+        let csvTimestamp = d.slice(0,1)[0][0];
+        console.log("csvTimestamp: " + csvTimestamp)
 
-//         d.slice(1).forEach( point => {
-//           if(+point[1]) {
-//             this.data.push({
-//               open: point[/*"openPrice"*/3] | 0,
-//               high: point[/*"highPrice"*/5] | 0,
-//               low: point[/*"lowPrice"*/6] | 0,
-//               close: point[/*"closePrice"*/4] | 0,
-//               time: +point[/*"endTime"*/1]
-//             })
-//             // let p : number = (Math.round(point[4] * 1000) / 1000)//.toFixed(2);
-//             lineData.push({time: +point[1] as UTCTimestamp, value: point[4] | 0})
-//           }
-//         })
         d.slice(0).forEach( point => {
 //           console.log(+point[0])
           if(+point[0]) {
@@ -262,18 +167,12 @@ export class AppComponent implements OnInit {
               lineData.push({time: +point[0]/1000 as UTCTimestamp, value: point[4] | 0})
             }
         })
-        this.lastBar = this.data[this.data.length-1]
-        // console.log("lastBar: " + JSON.stringify(this.lastBar))
-
         this.series.setData(this.data);
-//         this.closeLine.setData(lineData)
 
         this.http.get<any[]>(this.prefix + '/myTrades').subscribe( d => {
           this.myTrades = d
 
           let signals: any[] = d.map(s => {
-//             console.log(s)
-//             console.log(s['time'])
             return {
               time:  +s['time'] /1000 as UTCTimestamp,
               color: s['isBuyer'] === true ? 'rgb(7,130,19)' : 'rgb(113,10,11)',
@@ -282,22 +181,16 @@ export class AppComponent implements OnInit {
               text: (s['quoteQty']) || ''
             }
           })
-
           this.series.setMarkers(signals)
         })
       })
 
 //       chart.timeScale().setVisibleRange({
 //           from: (new Date(Date.UTC(2018, 0, 1, 0, 0, 0, 0))).getTime() / 1000,
-//           to: (new Date(Date.UTC(2018, 1, 1, 0, 0, 0, 0))).getTime() / 1000,
+//           to: (new Date(Date.UTC(2022, 1, 1, 0, 0, 0, 0))).getTime() / 1000,
 //       });
 
-
-
   }
-
-
-
 
 }
 
