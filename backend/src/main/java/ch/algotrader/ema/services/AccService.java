@@ -102,7 +102,7 @@ public class AccService {
                 .append("&")
                 .append("side=").append(side)
                 .append("&")
-//                .append("quantity=").append(quantity)
+//                .append("quantity=").append(quantity)  // retest
                 .append("quoteOrderQty=").append(quoteOrderQty)
                 .append("&")
                 .append("symbol=").append(symbol.toUpperCase(Locale.ROOT))

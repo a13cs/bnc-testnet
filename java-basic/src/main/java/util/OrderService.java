@@ -62,6 +62,12 @@ public class OrderService {
     }
 
     public OrderResult processOrder(SignalModel model, Context context) throws IOException, InterruptedException {
+        String action = model.getAction().split("_")[0];
+        String name = model.getAction().split("_")[1];
+        if (name.equals(props.get("name"))) {
+            // TODO: use name property
+        }
+
         double percentage = Double.parseDouble(props.get("position-entry")); // 0.25
 
 //      overbuy/oversell
