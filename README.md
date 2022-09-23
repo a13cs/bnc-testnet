@@ -15,4 +15,8 @@ Tradingview webhook:
 - https://docs.aws.amazon.com/apigateway/latest/developerguide/getting-started.html
 - https://github.com/awsdocs/aws-lambda-developer-guide/tree/main/sample-apps/java-basic
 
+A pine script example strategy
+- https://www.tradingview.com/script/FrjeeWdl-72s-Strat-Backtesting-Adaptive-HMA-pt-1/
+
+
 Order quantity and symbol are set up in application.properties (via 'Add api-key').
