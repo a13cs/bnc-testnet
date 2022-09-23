@@ -1,0 +1,31 @@
+<div style="padding: 10px">
+  <button (click)="getJar()">
+    Get jar
+  </button>
+</div>
+<!--<div>-->
+<!--  <button>-->
+<!--    Add API KEY-->
+<!--  </button>-->
+<!--</div>-->
+
+<h2> Lightweight-Charts </h2>
+<!--<span> Balance: {{balance | json}} </span>-->
+<div>
+    <h3>Acc type {{ acc.accountType }}</h3>
+    <h4 *ngFor="let b of balances">Asset {{ b.asset }} &nbsp; {{ b.free }} </h4>
+</div>
+<br>
+<div style="padding: 10px">
+  <button (click)="showTrades = !showTrades">
+    {{showTrades ? 'Hide' : 'Show'}} Trades
+  </button>
+  <div *ngIf="showTrades">
+<!--    table-->
+    <h5 *ngFor="let t of myTrades">
+      Symbol {{ t.symbol }} &nbsp;
+      Time {{ t.time }} &nbsp;
+      QuoteQty {{ t.quoteQty }}
+    </h5>
+  </div>
+</div>
