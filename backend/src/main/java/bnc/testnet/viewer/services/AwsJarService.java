@@ -22,7 +22,7 @@ public class AwsJarService {
     private static final Logger logger = LoggerFactory.getLogger(MarketService.class);
 
     public byte[] getUpdatedJar(Map<String, Object> props) throws IOException {
-        InputStream inputStream = this.getClass().getResourceAsStream("/java-basic.jar");
+        InputStream inputStream = this.getClass().getResourceAsStream("/java-basic-0.0.1-SNAPSHOT.jar");
 
         return updateZipFile(inputStream, props, "application.properties");
     }
