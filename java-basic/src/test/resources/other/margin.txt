@@ -1,0 +1,40 @@
+/sapi/v1/margin/account
+
+GET /sapi/v1/margin/isolated/account (HMAC SHA256)
+
+enable
+POST /sapi/v1/margin/isolated/account (HMAC SHA256)
+disable
+DELETE
+ /sapi/v1/margin/isolated/account (HMAC SHA256)
+
+
+GET /sapi/v1/margin/myTrades (HMAC SHA256)
+symbol	STRING	YES	
+isIsolated	STRING	NO	for isolated margin or not, "TRUE", "FALSE"，default "FALSE"
+orderId	LONG	NO	
+startTime	LONG	NO	
+endTime	LONG	NO	
+fromId	LONG	NO	TradeId to fetch from. Default gets most recent trades.
+limit	INT	NO	Default 500; max 1000.
+recvWindow	LONG	NO	The value cannot be greater than 60000
+timestamp	LONG	YES	
+
+[
+    {
+        "commission": "0.00006000",
+        "commissionAsset": "BTC",
+        "id": 34,
+        "isBestMatch": true,
+        "isBuyer": false,
+        "isMaker": false,
+        "orderId": 39324,
+        "price": "0.02000000",
+        "qty": "3.00000000",
+        "symbol": "BNBBTC",
+        "isIsolated": false,
+        "time": 1561973357171
+    }
+]
+
+

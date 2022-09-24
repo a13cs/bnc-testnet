@@ -52,28 +52,16 @@ public class MarketService {
     public String getInfo(String urlPath, Map<String, String> queryParams) throws IOException, InterruptedException {
         // uses props to fill query params
 
-        // todo update path and params if MARGIN
-        // GET /sapi/v1/accountSnapshot (HMAC SHA256)
-/*
-        type	    STRING	YES	"SPOT", "MARGIN", "FUTURES"
-        startTime	LONG	NO
-        endTime	    LONG	NO
-        limit	    INT	    NO	min 7, max 30, default 7
-        recvWindow	LONG	NO
-        timestamp	LONG	YES
-*/
-//        POST /sapi/v3/asset/getUserAsset
-/*
-        asset	            STRING	NO	If asset is blank, then query all positive assets user have.
-        needBtcValuation	BOOLEAN	NO	Whether need btc valuation or not.
-        recvWindow	        LONG	NO
-        timestamp	        LONG	YES
-*/
+        // todo
+//        GET /sapi/v1/margin/account
+//        GET /sapi/v1/margin/isolated/account (HMAC SHA256)  // add prop 'isolated'
+
         return ApiClientUtil.get(urlPath, queryParams, null, getProps());
     }
 
     public String getAccTradesList(HashMap<String, String> queryParams) throws IOException, InterruptedException {
-        // todo margin
+        // todo
+        // GET /sapi/v1/margin/myTrades (HMAC SHA256)  isIsolated
         return getInfo("myTrades", queryParams);
     }
 

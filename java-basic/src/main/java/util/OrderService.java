@@ -93,13 +93,11 @@ public class OrderService {
 
         // may need to enable before
 //      HashMap<String, Object> enableAcc = enableAcc(context);
-//      context.getLogger().log("enableAcc " + enableAcc.get("success"));
 
         return ApiClientUtil.sendOrder(side, qValue, BTCUSDT, context, getProps());
     }
 
     public String getSpotAsset(Context context, String asset) throws IOException, InterruptedException {
-        // GET /sapi/v1/margin/isolated/account timestamp, recv
         HashMap<String, String> queryParams = new HashMap<>();
         String body = ApiClientUtil.get("account", queryParams, context, getProps());
 
@@ -123,8 +121,9 @@ public class OrderService {
 
     private String getMarginAsset(Context context, String asset) throws IOException, InterruptedException {
         HashMap<String, String> queryParams = new HashMap<>();
-        // todo GET /sapi/v1/accountSnapshot (HMAC SHA256)
-//        POST /sapi/v3/asset/getUserAsset
+        // todo test
+//        GET /sapi/v1/margin/account
+//        GET /sapi/v1/margin/isolated/account (HMAC SHA256) timestamp, recv // add prop 'isolated'
         String resp = ApiClientUtil.get("account", queryParams, context, getProps());
 
         // get asset json

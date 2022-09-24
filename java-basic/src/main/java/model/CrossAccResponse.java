@@ -1,3 +1,7 @@
+package model;
+
+public class CrossAccResponse {
+/*
 {
   "tradeEnabled": true,
   "transferEnabled": true,
@@ -1504,4 +1508,8 @@
       "netAsset": "0"
     }
   ]
+}
+
+*/
+
 }

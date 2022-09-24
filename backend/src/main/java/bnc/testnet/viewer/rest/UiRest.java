@@ -57,7 +57,11 @@ public class UiRest {
         return lambdaJarService.getUpdatedJar(props);
     }
 
-
+/*
+        http://localhost:8080/klines/1663749692000/1663849692000/15m
+        http://localhost:8080/klines/1664582400000/1672531200000/15m
+        1s,1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
+ */
     @RequestMapping(method = RequestMethod.GET, path = "/klines/{start}/{end}/{interval}")
     public String klines(@PathVariable(value = "start") String start,
                          @PathVariable(value = "end") String end,
@@ -77,12 +81,8 @@ public class UiRest {
         map.put("limit","1000"); // max
         map.put("symbol", "BTCUSDT");
         map.put("interval", /*interval*/ interval);
+
         return marketService.getSimple("uiKlines", map);
-
-//        1s,1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
-
-//        http://localhost:8080/klines/1663749692000/1663849692000/15m
-//        http://localhost:8080/klines/1664582400000/1672531200000/15m
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/order/{side}/{symbol}/{quoteQty}")
@@ -90,7 +90,6 @@ public class UiRest {
             @PathVariable(value = "side") String side,
             @PathVariable(value = "symbol") String symbol,
             @PathVariable(value = "quoteQty") String quoteQty) throws IOException, InterruptedException {
-//        BigDecimal q = BigDecimal.valueOf(0.002);
 
         return marketService.sendOrder(side, new BigDecimal(quoteQty) , symbol);
     }
