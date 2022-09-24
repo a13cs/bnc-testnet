@@ -33,6 +33,11 @@ public class UiRest {
         return marketService.getInfo("account", new HashMap<>());
     }
 
+    @RequestMapping(method = RequestMethod.GET, path = "/accType")
+    public HashMap<String, Object> accType() throws IOException {
+        return marketService.getAccType();
+    }
+
     @RequestMapping(method = RequestMethod.GET, path = "/myTrades")
     public String accTradesList() throws IOException, InterruptedException {
         HashMap<String, String> params = new HashMap<>();

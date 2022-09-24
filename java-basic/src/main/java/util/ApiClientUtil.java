@@ -78,19 +78,22 @@ public final class ApiClientUtil {
         queryParams.put("recvWindow", props.get("recv-window"));
         queryParams.forEach((k, v) -> sb.append("&").append(k).append("=").append(v));
 
-        String signature = ApiClientUtil.createHmacSignature(props.get("api-secret"), sb.toString());
-        sb.append("&signature=").append(signature);
 
         String url = null;
         if ("MARGIN".equals(props.get("type"))) {
             url = props.get("rest-uri-margin") + path;
-            sb.append("&").append("isIsolated=").append("FALSE");
+            if (path.contains("trades")) {
+                sb.append("&").append("isIsolated=").append("FALSE");
+            }
         }
         if ("SPOT".equals(props.get("type")) || props.get("type") == null) {
             url = props.get("rest-uri") + path;
         }
-        url += "?" + sb;
 
+        String signature = ApiClientUtil.createHmacSignature(props.get("api-secret"), sb.toString());
+        sb.append("&signature=").append(signature);
+
+        url += "?" + sb;
         HttpClient client = HttpClient.newBuilder().build();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -155,8 +158,6 @@ public final class ApiClientUtil {
 
 
 
-        String signature = sb + "&signature=" +
-                ApiClientUtil.createHmacSignature(props.get("api-secret"), sb.toString());
 
         String url = null;
         if ("MARGIN".equals(props.get("type"))) {
@@ -166,15 +167,22 @@ public final class ApiClientUtil {
         if ("SPOT".equals(props.get("type")) || props.get("type") == null) {
             url = props.get("rest-uri") + "order";
         }
+
+        String signature = ApiClientUtil.createHmacSignature(props.get("api-secret"), sb.toString());
+        sb.append("&signature=").append(signature);
+
+        url += "?" + sb;
         HttpClient client = HttpClient.newBuilder().build();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url + "?" + signature))
+                .uri(URI.create(url))
                 .POST(HttpRequest.BodyPublishers.noBody())
                 .headers("X-MBX-APIKEY", props.get("api-key"))
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//        context.getLogger().log("response: " + response.body());
+        if (context != null) {
+            context.getLogger().log("response: " + response.body());
+        }
 
         return OM.readValue(response.body(), OrderResult.class);
     }
@@ -192,41 +200,5 @@ public final class ApiClientUtil {
             throw new RuntimeException("cannot create " + hmacSHA256, e);
         }
     }
-
-/*
-    // todo
-    private HashMap<String, Object> enableIsolatedAcc(Context context, Map<String, String> props) throws IOException, InterruptedException {
-        String urlPath = "isolated/account";
-        String url = props.get("rest-uri-margin") + urlPath;
-
-        String time = getTime(context, Collections.emptyMap());
-        HashMap<String, String> responseJson = OM.readValue(time, new TypeReference<HashMap<String, String>>() {
-        });
-        context.getLogger().log("time " + time);
-//        long time = new Date().getTime();
-
-        StringBuilder sb = new StringBuilder()
-                .append("timestamp=").append(responseJson.get("serverTime"))
-                .append("&")
-                .append("recvWindow=").append(props.get("recv-window"))  // 60_000
-                .append("&")
-                .append("symbol=").append("BTCUSDT");
-
-
-        String signature = sb + "&signature=" + createHmacSignature(props.get("api-secret"), sb.toString());
-
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url + "?" + signature))
-                .POST(HttpRequest.BodyPublishers.noBody())
-                .headers("X-MBX-APIKEY", props.get("api-key"))
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        context.getLogger().log("response: " + response.body());
-
-        return OM.readValue(response.body(), new TypeReference<HashMap<String, Object>>(){});
-    }
-*/
 
 }

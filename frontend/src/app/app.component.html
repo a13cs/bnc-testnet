@@ -6,6 +6,11 @@
     </a>
   </div>
 </div>
+<div>
+  <button (click)="refresh()" >
+    Refresh
+  </button>
+</div>
 
 <!--  add buy/sell -->
 <div>
@@ -38,6 +43,7 @@
   </div>
   <br>
   <div style="padding: 10px">
+<!--    todo margin trades    -->
     <button (click)="showTrades = !showTrades">
       {{showTrades ? 'Hide' : 'Show'}} Trades
     </button>
@@ -49,6 +55,7 @@
         QuoteQty {{ t.quoteQty }}
       </h5>
     </div>
+    <!--    todo margin trades on chart button   -->
   </div>
 </div>
 

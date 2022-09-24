@@ -138,18 +138,24 @@ export class AppComponent implements OnInit {
 //     });
 
     console.log("accType " + AppComponent.accType)
+    this.http.get<AccType>(this.prefix + '/accType').subscribe( d => {
+      console.log("accType type " + d.type)
+      AppComponent.accType = d.type
+      console.log("accType response " + AppComponent.accType)
+    })
 
-    if(AppComponent.accType == "SPOT") {
+    if(AppComponent.accType === "SPOT") {
       this.http.get<Acc>(this.prefix + '/acc').subscribe( d => {
         console.log(d)
-        this.balances = d.balances.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+        this.balances = d.balances?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
       })
-    } else if (AppComponent.accType == "MARGIN") {
+    } else if (AppComponent.accType === "MARGIN") {
       this.http.get<MarginAcc>(this.prefix + '/acc').subscribe( d => {
         console.log(d)
-        this.balances = d.userAssets.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+        this.balances = d.userAssets?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
       })
-    }
+    } else this.balances = []
+
 
 
 //   use datepicker
@@ -212,14 +218,19 @@ export class AppComponent implements OnInit {
     if(AppComponent.accType == "SPOT") {
       this.http.get<Acc>(this.prefix + '/acc').subscribe( d => {
         console.log(d)
-        this.balances = d.balances?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+        this.balances = d.balances?.filter(b => b.asset === 'BTC' || b.asset === 'USDT') || []
       })
     } else if (AppComponent.accType == "MARGIN") {
       this.http.get<MarginAcc>(this.prefix + '/acc').subscribe( d => {
         console.log(d)
-        this.balances = d.userAssets?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+        this.balances = d.userAssets?.filter(b => b.asset === 'BTC' || b.asset === 'USDT') || []
       })
     } else this.balances = []
+  }
+
+//  todo get document.body canvas
+  refresh() {
+//     this.ngOnInit()
   }
 
 }
@@ -230,6 +241,10 @@ export class AppComponent implements OnInit {
 
   export interface MarginAcc {
     userAssets: Balance[]
+  }
+
+  export interface AccType {
+    type: string
   }
 
   export interface Balance {

@@ -67,14 +67,14 @@ public class OrderService {
         }
         if ("SPOT".equals(props.get("type")) || props.get("type") == null) {
             usdt = getSpotAsset(context, "USDT");
-
         }
+
         if (usdt == null) {
             context.getLogger().log("No free assets.");
             return new OrderResult();
         }
 
-        BigDecimal freeUsdt = new BigDecimal(usdt);
+        BigDecimal freeUsdt = new BigDecimal(usdt /*250*/);
         BigDecimal quantity = BigDecimal.valueOf(percentage).multiply(freeUsdt);
 
         if (!inTrade && reverseOrderQuantity.intValue() == 0) {
@@ -92,8 +92,6 @@ public class OrderService {
         context.getLogger().log("Quantity: " + qValue);
 
         // may need to enable before
-//      HashMap<String, Object> enableAcc = enableAcc(context);
-
         return ApiClientUtil.sendOrder(side, qValue, BTCUSDT, context, getProps());
     }
 
@@ -119,10 +117,9 @@ public class OrderService {
         return null;
     }
 
-    private String getMarginAsset(Context context, String asset) throws IOException, InterruptedException {
+    public String getMarginAsset(Context context, String asset) throws IOException, InterruptedException {
         HashMap<String, String> queryParams = new HashMap<>();
-        // todo test
-//        GET /sapi/v1/margin/account
+        // todo
 //        GET /sapi/v1/margin/isolated/account (HMAC SHA256) timestamp, recv // add prop 'isolated'
         String resp = ApiClientUtil.get("account", queryParams, context, getProps());
 

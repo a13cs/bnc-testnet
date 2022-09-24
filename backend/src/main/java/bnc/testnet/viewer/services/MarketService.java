@@ -1,5 +1,7 @@
 package bnc.testnet.viewer.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import model.OrderResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,4 +99,12 @@ public class MarketService {
 
         return map;
     }
+
+    public HashMap<String, Object> getAccType() throws JsonProcessingException {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("type", getProps().get("type"));
+
+        return map;
+    }
+
 }
