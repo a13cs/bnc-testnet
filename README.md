@@ -8,7 +8,7 @@ API-KEY
 
 Check https://testnet.binance.vision/ for API KEY.
 
-Module `java-basic` posts market orders for `{"action":"sell"}` or `{"action":"buy"}` post payload. (todo)
+Module `java-basic` posts market orders for `{"action":"sell"}` or `{"action":"buy"}` post payload.
 
 Tradingview webhook: 
 - https://wundertrading.com/en/tradingview-automated-trading
