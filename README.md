@@ -1,6 +1,7 @@
 
 ### Install
 `mvn clean install`
+
 `java -jar backend\target\demo-be-0.0.1-SNAPSHOT.jar`
 
 API-KEY
@@ -8,7 +9,8 @@ API-KEY
 
 Check https://testnet.binance.vision/ for API KEY.
 
-Module `java-basic` posts market orders for `{"action":"sell"}` or `{"action":"buy"}` post payload.
+Module `java-basic` posts market orders for `{"action":"SELL_BNC-1"}` or `{"action":"BUY_BNC-1"}` post payload.
+- side (sell/buy) + `_` + name
 
 Tradingview webhook: 
 - https://wundertrading.com/en/tradingview-automated-trading
@@ -19,4 +21,4 @@ A pine script example strategy
 - https://www.tradingview.com/script/FrjeeWdl-72s-Strat-Backtesting-Adaptive-HMA-pt-1/
 
 
-Order quantity and symbol are set up in application.properties (via 'Add api-key').
+Order quantity, symbol and name are set up in application.properties (via 'Add api-key').
