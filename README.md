@@ -21,4 +21,4 @@ A pine script example strategy
 - https://www.tradingview.com/script/FrjeeWdl-72s-Strat-Backtesting-Adaptive-HMA-pt-1/
 
 
-Order quantity, symbol and name are set up in application.properties (via 'Add api-key').
+Order quantity, symbol and name are set up in application.properties (via 'Add api-key' button).
