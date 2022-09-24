@@ -123,6 +123,8 @@ public class OrderService {
 
     private String getMarginAsset(Context context, String asset) throws IOException, InterruptedException {
         HashMap<String, String> queryParams = new HashMap<>();
+        // todo GET /sapi/v1/accountSnapshot (HMAC SHA256)
+//        POST /sapi/v3/asset/getUserAsset
         String resp = ApiClientUtil.get("account", queryParams, context, getProps());
 
         // get asset json
