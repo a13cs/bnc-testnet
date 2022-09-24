@@ -26,7 +26,10 @@ export class DialogOverviewExample {
     {key: "api-key", value: "MqLTBCiXSVzyFVd70m31PSVPUOUeDerH304Tziy6AkbUtHbotiCBnJlqDTwDVQqg"},
     {key: "api-secret", value: "Yr5HgRB25lbhcJgBu8rvuQMaWlJQ6635800RMaFpAhdqE7g0TG1jj5AW9vva5VWS"},
     {key: "rest-uri", value: "https://testnet.binance.vision/api/v3/"},
+    {key: "rest-uri-margin", value: "https://api.binance.com/sapi/v1/margin/"},
     {key: "position-entry", value: "0.02"},
+    {key: "recv-window", value: "60000"},
+    {key: "name", value: "BNC-1"},
     {key: "type", value: "SPOT"}
   ]
 

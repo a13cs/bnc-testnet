@@ -15,8 +15,8 @@ public class OrderResult {
         "timeInForce": "GTC",
         "type": "MARKET",
         "side": "SELL",
-        "strategyId": 1,               // This is only visible if the field was populated on order placement.
-        "strategyType": 1000000        // This is only visible if the field was populated on order placement.
+        "strategyId": 1,
+        "strategyType": 1000000
     }
 */
 

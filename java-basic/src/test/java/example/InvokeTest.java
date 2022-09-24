@@ -1,13 +1,23 @@
 package example;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import model.OrderResult;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.ApiClientUtil;
+import util.OrderService;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -15,10 +25,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static util.ApiClientUtil.getCurrentPrice;
 
 class InvokeTest {
   private static final Logger logger = LoggerFactory.getLogger(InvokeTest.class);
@@ -27,19 +42,11 @@ class InvokeTest {
   static {
     OM.configure(SerializationFeature.INDENT_OUTPUT, true);
   }
-  @Test
-  void invokeTest() throws IOException, URISyntaxException {
-    Context context = new TestContext();
+//  @Test
+//  void invokeTest() throws IOException, URISyntaxException {
 
-    String json = loadJsonFile("event.json");
+    // tradingview List of trades CSV
 
-    WeatherData data = OM.readValue(json, WeatherData.class);
-
-    String weatherData = new HandlerWeatherData().handleRequest(data, context);
-
-    assertEquals(data, OM.readValue(weatherData, WeatherData.class));
-
-//
 //    List<Double> pr = new ArrayList<>();
 //
 //    URL resource = InvokeTest.class.getClassLoader().getResource("trades.csv");
@@ -105,30 +112,30 @@ class InvokeTest {
 //
 //    double profit = initial[0] - firstEntry;
 //    logger.info(" % " + (profit/firstEntry) * 100);
+//
+//  }
 
-
-  }
-
-
+// test send real order
 //  @Test
-//  void orderTest() throws IOException, URISyntaxException {
+//  void orderTest() throws IOException, URISyntaxException, InterruptedException {
 //    logger.info("Order TEST");
 //    Context context = new TestContext();
 //
-//    String json = loadJsonFile("wh-simple.json");
+//    balanceDiff(context);
 //
+//    String json = loadJsonFile("wh-simple.json");
 //
 //    Map<String, Object> tvSignal = OM.readValue(json, new TypeReference<HashMap<String, Object>>(){});
 //
 //    Map<String,Object> event = new HashMap<>();
 //    event.put("isBase64Encoded", false);
 //    event.put("body", tvSignal);
-//    String response = new MainHandler().handleRequest(tvSignal, context);
+//    String response = new Handler().handleRequest(tvSignal, context);
 //
-//    assertEquals(
-//            tvSignal.get("action").toString().toUpperCase(),
-//            OM.readValue(response, OrderResult.class).getSide()
-//    );
+//    String expected = tvSignal.get("action").toString().split("_")[0];
+//    String actual = OM.readValue(response, OrderResult.class).getSide();
+//
+//    assertTrue(expected.equalsIgnoreCase(actual));
 //  }
 
   private static String loadJsonFile(String filePath) throws URISyntaxException {
@@ -147,4 +154,50 @@ class InvokeTest {
     }
     return stringBuilder.toString();
   }
+
+  // split asserts
+  private void balanceDiff(Context context) throws IOException, InterruptedException {
+    OrderService orderService = new OrderService();
+
+    BigDecimal accBalanceUsdt = new BigDecimal(orderService.getSpotAsset(context, "USDT"));
+    BigDecimal accBalanceBtc = new BigDecimal(orderService.getSpotAsset(context, "BTC"));
+
+    String p = getCurrentPrice(context, getProps());
+
+    BigDecimal price = new BigDecimal(p);
+    BigDecimal u = accBalanceBtc.multiply(price);
+    BigDecimal diff = u.subtract(accBalanceUsdt).round(new MathContext(8, RoundingMode.UP));
+
+    context.getLogger().log("Balance diff USDT: " + diff.toPlainString());
+
+    // use quote/total < 0.4
+    BigDecimal total = accBalanceUsdt.add(u);
+    double threshold = total.multiply(new BigDecimal("0.45")).doubleValue();
+    context.getLogger().log("Balance diff threshold: " + (long) threshold);
+
+    if (diff.abs().doubleValue() > threshold) {
+      String quoteOrderQty = diff.abs().multiply(new BigDecimal("0.5")).toPlainString();
+      if (diff.signum() > 0) {
+        ApiClientUtil.sendOrder("sell", quoteOrderQty, "BTCUSDT", context, getProps());
+      } else {
+        ApiClientUtil.sendOrder("buy", quoteOrderQty, "BTCUSDT", context, getProps());
+      }
+    }
+  }
+
+  private Map<String, String> getProps() {
+    Map<String, String> props = new HashMap<>();
+
+    InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("application.properties");
+    if (inputStream != null) {
+      List<String> lines = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.toList());
+      lines.forEach(l -> {
+        String[] pair = l.split("=");
+        // take first
+        props.putIfAbsent(pair[0], pair[1]);
+      });
+    }
+    return props;
+  }
+
 }

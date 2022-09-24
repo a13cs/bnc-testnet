@@ -1,4 +1,4 @@
-package ch.algotrader.ema.services;
+package bnc.testnet.viewer.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +17,9 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 @Service
-public class JarService {
+public class AwsJarService {
 
-    private static final Logger logger = LoggerFactory.getLogger(AccService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MarketService.class);
 
     public byte[] getUpdatedJar(Map<String, Object> props) throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream("/java-basic.jar");

@@ -139,14 +139,15 @@ export class AppComponent implements OnInit {
       this.balances = d.balances.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
     })
 
-//   getData() {
-    let start = new Date(Date.UTC(2022, 8, 20, 0, 0, 0, 0)).getTime() // 1000
-    let end = new Date(Date.UTC(2022, 9, 1, 0, 0, 0, 0)).getTime() // 1000
+//   use datepicker
+    let start = new Date(Date.UTC(2022, 8, 22, 0, 0, 0, 0)).getTime() // 1000
+//     let end = new Date(Date.UTC(2022, 12, 1, 0, 0, 0, 0)).getTime() // 1000
+    let end = new Date().getTime() // 1000
     console.log("start: " + start)
     console.log("end: " + end)
 
     let interval = '5m'
-    this.http.get<any[]>(this.prefix + '/klines/' + start + '/' + end + '/' + interval).subscribe(
+    this.http.get<any[]>(this.prefix + '/klines/' + /* start */ 0 + '/' + /* end */ 0 + '/' + interval).subscribe(
       d => {
         let lineData: any[] = []
 

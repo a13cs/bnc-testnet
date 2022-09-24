@@ -1,4 +1,4 @@
-package main;
+package example;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
@@ -17,12 +17,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 // Handler value: main.Handler
-public class MainHandler implements RequestHandler<Map<String, Object>, String>{
+public class Handler implements RequestHandler<Map<String, Object>, String>{
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
   private final OrderService orderService = new OrderService();
   @Override
-  public String handleRequest(/*SignalModel event*/ Map<String, Object> event, Context context) {
+  public String handleRequest(Map<String, Object> event, Context context) {
     LambdaLogger logger = context.getLogger();
 
     logger.log("CONTEXT: " + gson.toJson(context));
@@ -33,7 +33,6 @@ public class MainHandler implements RequestHandler<Map<String, Object>, String>{
 
     try {
       Object body = event.get("body");
-      SignalModel model = new SignalModel();
 
       HashMap<String, Object> bodyMap = new HashMap<>();
       try{
@@ -45,13 +44,14 @@ public class MainHandler implements RequestHandler<Map<String, Object>, String>{
         } else {
           jsonEvent = body.toString(); //  "body": "{\"action\":\"sell\"}"
         }
+
         /*HashMap<String, Object>*/ bodyMap = new ObjectMapper().readValue(jsonEvent, new TypeReference<HashMap<String, Object>>() {
         });
       } catch (Exception e) {
         context.getLogger().log("Event received as " + event);
         bodyMap.putAll(event);
       }
-      model.setAction(bodyMap.get("action").toString().toUpperCase());
+      String model = bodyMap.get("action").toString().toUpperCase();
 
       OrderResult orderResult = orderService.processOrder(model, context);
 //      logger.log("OrderResult: " + gson.toJson(orderResult));
