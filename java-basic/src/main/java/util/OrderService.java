@@ -53,11 +53,10 @@ public class OrderService {
 
     public OrderResult processOrder(String model, Context context) throws IOException, InterruptedException {
         double percentage = Double.parseDouble(props.get("position-entry"));
-
-//        String side = model.toUpperCase();
+        // uppercase
         String side = model.split("_")[0];
         String name = model.split("_")[1];
-        if (!name.equals(props.get("name"))) {
+        if (!name.equalsIgnoreCase(props.get("name"))) {
             context.getLogger().log("Name not matched. " + name);
             return new OrderResult();
         }
