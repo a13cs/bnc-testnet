@@ -1,6 +1,7 @@
 import {Component, Inject} from '@angular/core';
 import {MatDialog, MatDialogRef, MAT_DIALOG_DATA} from '@angular/material/dialog';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
+import {AppComponent} from "../app.component";
 
 
 // export interface DialogData {
@@ -62,6 +63,7 @@ export class DialogOverviewExample {
 
     this.http.post('/saveProps', props, {headers: h}).subscribe( d => {
       console.log(d)
+      AppComponent.accType = props['type']
     })
 
   }

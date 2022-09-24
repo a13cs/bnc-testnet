@@ -50,7 +50,7 @@ public class MarketService {
     }
 
     public String getInfo(String urlPath, Map<String, String> queryParams) throws IOException, InterruptedException {
-        // use props to fill query params
+        // uses props to fill query params
         return ApiClientUtil.get(urlPath, queryParams, null, getProps());
     }
 

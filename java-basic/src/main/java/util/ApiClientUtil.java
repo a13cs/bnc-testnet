@@ -62,9 +62,6 @@ public final class ApiClientUtil {
         return responseJson.get("price");
     }
 
-//    public static String get(String path, Context context, Map<String, String> props) throws IOException, InterruptedException {
-//        return get(path, new HashMap<>(), context, props);
-//    }
     public static String get(
             String path,
             Map<String, String> queryParams,
@@ -84,7 +81,15 @@ public final class ApiClientUtil {
         String signature = ApiClientUtil.createHmacSignature(props.get("api-secret"), sb.toString());
         sb.append("&signature=").append(signature);
 
-        String url = props.get("rest-uri") + path + "?" + sb;
+        String url = null;
+        if ("MARGIN".equals(props.get("type"))) {
+            url = props.get("rest-uri-margin") + path;
+            sb.append("&").append("isIsolated=").append("FALSE");
+        }
+        if ("SPOT".equals(props.get("type")) || props.get("type") == null) {
+            url = props.get("rest-uri") + path;
+        }
+        url += "?" + sb;
 
         HttpClient client = HttpClient.newBuilder().build();
         HttpRequest request = HttpRequest.newBuilder()

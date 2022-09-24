@@ -16,8 +16,13 @@ export class AppComponent implements OnInit {
   data: any[] = []
   series: any = []
 
-  acc: Acc = {accountType: "SPOT", balances: []}
+  static accType: string = "SPOT"  // todo acc type endpoint
+  get accTypeValue() {
+    return AppComponent.accType
+  }
+
   balances: Balance[] = [];
+
   myTrades: any [] = [];
   showTrades: boolean = false
 
@@ -132,12 +137,20 @@ export class AppComponent implements OnInit {
 //       lineWidth: 2,
 //     });
 
+    console.log("accType " + AppComponent.accType)
 
-    this.http.get<Acc>(this.prefix + '/acc').subscribe( d => {
-      this.acc = d
-      console.log(d)
-      this.balances = d.balances.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
-    })
+    if(AppComponent.accType == "SPOT") {
+      this.http.get<Acc>(this.prefix + '/acc').subscribe( d => {
+        console.log(d)
+        this.balances = d.balances.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+      })
+    } else if (AppComponent.accType == "MARGIN") {
+      this.http.get<MarginAcc>(this.prefix + '/acc').subscribe( d => {
+        console.log(d)
+        this.balances = d.userAssets.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+      })
+    }
+
 
 //   use datepicker
     let start = new Date(Date.UTC(2022, 8, 22, 0, 0, 0, 0)).getTime() // 1000
@@ -193,11 +206,30 @@ export class AppComponent implements OnInit {
 
   }
 
+  getAcc() {
+    console.log("accType " + AppComponent.accType)
+
+    if(AppComponent.accType == "SPOT") {
+      this.http.get<Acc>(this.prefix + '/acc').subscribe( d => {
+        console.log(d)
+        this.balances = d.balances?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+      })
+    } else if (AppComponent.accType == "MARGIN") {
+      this.http.get<MarginAcc>(this.prefix + '/acc').subscribe( d => {
+        console.log(d)
+        this.balances = d.userAssets?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+      })
+    } else this.balances = []
+  }
+
 }
 
   export interface Acc {
-    accountType: string,
     balances: Balance[]
+  }
+
+  export interface MarginAcc {
+    userAssets: Balance[]
   }
 
   export interface Balance {

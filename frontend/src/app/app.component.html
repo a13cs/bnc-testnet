@@ -26,9 +26,14 @@
 
 <div>
   <h2> Lightweight-Charts </h2>
-  <!--<span> Balance: {{balance | json}} </span>-->
   <div>
-      <h4>Acc type:&nbsp;</h4><h3>  {{ acc.accountType }}</h3>
+    <button (click)="getAcc()" >
+      Acc Info
+    </button>
+  </div>
+  <!--<span> Balance: {{balance | json}} </span>-->
+  <div *ngIf="balances.length">
+      <h4>Acc type:&nbsp;</h4><h3>  {{ accTypeValue }}</h3>
       <h4 *ngFor="let b of balances">Asset {{ b.asset }} &nbsp; {{ b.free }} </h4>
   </div>
   <br>

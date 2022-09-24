@@ -122,9 +122,8 @@ public class OrderService {
     }
 
     private String getMarginAsset(Context context, String asset) throws IOException, InterruptedException {
-        String url = props.get("rest-uri-margin") + "account";
         HashMap<String, String> queryParams = new HashMap<>();
-        String resp = ApiClientUtil.get(url, queryParams, context, getProps());
+        String resp = ApiClientUtil.get("account", queryParams, context, getProps());
 
         // get asset json
         HashMap<String, Object> responseJson = OM.readValue(resp, new TypeReference<HashMap<String, Object>>() {

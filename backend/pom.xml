@@ -115,6 +115,7 @@
 
 	</dependencies>
 
+<!--	todo: copy jar to resources    -->
 
 	<build>
 		<plugins>
