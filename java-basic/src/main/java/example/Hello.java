@@ -16,8 +16,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-// rename Hello
-public class Handler implements RequestHandler<Map<String, Object>, String>{
+public class Hello implements RequestHandler<Map<String, Object>, String>{
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
   private final OrderService orderService = new OrderService();

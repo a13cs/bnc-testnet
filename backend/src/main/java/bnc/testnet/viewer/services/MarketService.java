@@ -1,6 +1,5 @@
 package bnc.testnet.viewer.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import model.OrderResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

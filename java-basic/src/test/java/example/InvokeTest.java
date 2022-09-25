@@ -131,7 +131,7 @@ class InvokeTest {
 //    Map<String,Object> event = new HashMap<>();
 //    event.put("isBase64Encoded", false);
 //    event.put("body", tvSignal);
-    String response = new Handler().handleRequest(tvSignal, context);
+    String response = new Hello().handleRequest(tvSignal, context);
 
     String expected = tvSignal.get("action").toString().split("_")[0];
     String actual = OM.readValue(response, OrderResult.class).getSide();

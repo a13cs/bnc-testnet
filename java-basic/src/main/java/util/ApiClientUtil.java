@@ -84,7 +84,7 @@ public final class ApiClientUtil {
         String url = null;
         if ("MARGIN".equals(props.get("type"))) {
             url = props.get("rest-uri-margin") + path;
-            if (path.contains("trades")) {
+            if (path.contains("myTrades")) {
                 sb.append("&").append("isIsolated=").append(param);
             }
         }
@@ -159,12 +159,13 @@ public final class ApiClientUtil {
                 .append("newOrderRespType=").append("RESULT");
 
 
-
+        boolean isolated = Boolean.parseBoolean(props.get("isolated"));
+        String param = Boolean.toString(isolated).toUpperCase();
 
         String url = null;
         if ("MARGIN".equals(props.get("type"))) {
             url = props.get("rest-uri-margin") + "order";
-            sb.append("&").append("isIsolated=").append("FALSE");
+            sb.append("&").append("isIsolated=").append(param);
         }
         if ("SPOT".equals(props.get("type")) || props.get("type") == null) {
             url = props.get("rest-uri") + "order";

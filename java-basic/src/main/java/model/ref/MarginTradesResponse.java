@@ -1,4 +1,4 @@
-package model;
+package model.ref;
 
 public class MarginTradesResponse {
 
