@@ -78,12 +78,14 @@ public final class ApiClientUtil {
         queryParams.put("recvWindow", props.get("recv-window"));
         queryParams.forEach((k, v) -> sb.append("&").append(k).append("=").append(v));
 
+        boolean isolated = Boolean.parseBoolean(props.get("isolated"));
+        String param = Boolean.toString(isolated).toUpperCase();
 
         String url = null;
         if ("MARGIN".equals(props.get("type"))) {
             url = props.get("rest-uri-margin") + path;
             if (path.contains("trades")) {
-                sb.append("&").append("isIsolated=").append("FALSE");
+                sb.append("&").append("isIsolated=").append(param);
             }
         }
         if ("SPOT".equals(props.get("type")) || props.get("type") == null) {

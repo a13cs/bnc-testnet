@@ -31,7 +31,8 @@ export class DialogOverviewExample {
     {key: "position-entry", value: "0.02"},
     {key: "recv-window", value: "60000"},
     {key: "name", value: "BNC-1"},
-    {key: "type", value: "SPOT"}
+    {key: "type", value: "SPOT"},
+    {key: "isolated", value: "FALSE"}
   ]
 
   constructor(public dialog: MatDialog, private http: HttpClient) {}
@@ -49,7 +50,7 @@ export class DialogOverviewExample {
         let properties: any = {}
         rez.map(pair => properties[pair.key] = pair.value)
 
-        console.log(properties)
+//         console.log(properties)
 
         this.saveProps(properties)
       }
@@ -57,7 +58,7 @@ export class DialogOverviewExample {
   }
 
   saveProps(props? : any) {
-    console.log(props)
+//     console.log(props)
     let h = new HttpHeaders()
     h.set('Content-Type', 'application/json')
 

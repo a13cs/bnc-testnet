@@ -16,12 +16,17 @@ export class AppComponent implements OnInit {
   data: any[] = []
   series: any = []
 
-  static accType: string = "SPOT"  // todo acc type endpoint
+  static isolated: string = "FALSE"
+  get isAccIsolated() {
+    return AppComponent.isolated
+  }
+
+  static accType: string = "SPOT"
   get accTypeValue() {
     return AppComponent.accType
   }
 
-  balances: Balance[] = [];
+  balances: Balance[] | { asset: any; free: any; }[] = [];
 
   myTrades: any [] = [];
   showTrades: boolean = false
@@ -81,7 +86,6 @@ export class AppComponent implements OnInit {
 //       lineWidth: 2,
 //     });
 
-    // todo: add volume
     // chart.addHistogramSeries()
 
     // let volumeSeries = chart.addHistogramSeries({
@@ -141,6 +145,7 @@ export class AppComponent implements OnInit {
     this.http.get<AccType>(this.prefix + '/accType').subscribe( d => {
       console.log("accType type " + d.type)
       AppComponent.accType = d.type
+      AppComponent.isolated = d.isolated
       console.log("accType response " + AppComponent.accType)
     })
 
@@ -152,7 +157,16 @@ export class AppComponent implements OnInit {
     } else if (AppComponent.accType === "MARGIN") {
       this.http.get<MarginAcc>(this.prefix + '/acc').subscribe( d => {
         console.log(d)
-        this.balances = d.userAssets?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+        if (AppComponent.isolated === "TRUE") {
+          this.balances = d.assets?.filter(b => b.symbol == 'BTCUSDT').flatMap(a => {
+            return [
+            {asset : a.baseAsset.asset, free : a.baseAsset.free},
+            {asset : a.quoteAsset.asset, free : a.quoteAsset.free}
+            ]
+          })
+        } else {
+          this.balances = d.userAssets?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+        }
       })
     } else this.balances = []
 
@@ -223,7 +237,16 @@ export class AppComponent implements OnInit {
     } else if (AppComponent.accType == "MARGIN") {
       this.http.get<MarginAcc>(this.prefix + '/acc').subscribe( d => {
         console.log(d)
-        this.balances = d.userAssets?.filter(b => b.asset === 'BTC' || b.asset === 'USDT') || []
+        if (AppComponent.isolated === "TRUE") {
+          this.balances = d.assets?.filter(b => b.symbol == 'BTCUSDT').flatMap(a => {
+            return [
+            {asset : a.baseAsset.asset, free : a.baseAsset.free},
+            {asset : a.quoteAsset.asset, free : a.quoteAsset.free}
+            ]
+          })
+        } else {
+          this.balances = d.userAssets?.filter(b => b.asset === 'BTC' || b.asset === 'USDT') || []
+        }
       })
     } else this.balances = []
   }
@@ -240,11 +263,19 @@ export class AppComponent implements OnInit {
   }
 
   export interface MarginAcc {
-    userAssets: Balance[]
+    userAssets: Balance[],
+    assets: BalanceIsolated[]
+  }
+
+  export interface BalanceIsolated {
+    symbol: string,
+    baseAsset: any,
+    quoteAsset: any
   }
 
   export interface AccType {
-    type: string
+    type: string,
+    isolated: string
   }
 
   export interface Balance {

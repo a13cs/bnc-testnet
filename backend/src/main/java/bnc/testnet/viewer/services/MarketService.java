@@ -1,7 +1,6 @@
 package bnc.testnet.viewer.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import model.OrderResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +30,8 @@ public class MarketService {
     private String marginUrl;
     @Value("${type}")
     private String accType;
+    @Value("${isolated}")
+    private String isolated;
     @Value("${api-key}")
     private String apiKey;
     @Value("${api-secret}")
@@ -52,18 +53,15 @@ public class MarketService {
     }
 
     public String getInfo(String urlPath, Map<String, String> queryParams) throws IOException, InterruptedException {
+        String isolated = getProps().get("isolated").toString();
+        if (Boolean.parseBoolean(isolated) && "account".equals(urlPath)) {
+            urlPath = "isolated/" + urlPath;
+        }
         // uses props to fill query params
-
-        // todo
-//        GET /sapi/v1/margin/account
-//        GET /sapi/v1/margin/isolated/account (HMAC SHA256)  // add prop 'isolated'
-
         return ApiClientUtil.get(urlPath, queryParams, null, getProps());
     }
 
     public String getAccTradesList(HashMap<String, String> queryParams) throws IOException, InterruptedException {
-        // todo
-        // GET /sapi/v1/margin/myTrades (HMAC SHA256)  isIsolated
         return getInfo("myTrades", queryParams);
     }
 
@@ -79,6 +77,7 @@ public class MarketService {
         marginUrl = props.get("rest-uri-margin").toString();
         quantity = props.get("position-entry").toString();
         accType = props.get("type").toString();
+        isolated = props.get("isolated").toString();
         recvWindow = props.get("recv-window").toString();
         name = props.get("name").toString();
 
@@ -93,6 +92,7 @@ public class MarketService {
         map.put("rest-uri",(T)  baseUrl);
         map.put("position-entry",(T)  quantity);
         map.put("type",(T)  accType);
+        map.put("isolated",(T)  isolated);
         map.put("rest-uri-margin",(T)  marginUrl);
         map.put("recv-window",(T)  recvWindow);
         map.put("name",(T)  name);
@@ -100,9 +100,10 @@ public class MarketService {
         return map;
     }
 
-    public HashMap<String, Object> getAccType() throws JsonProcessingException {
+    public HashMap<String, Object> getAccType() {
         HashMap<String, Object> map = new HashMap<>();
         map.put("type", getProps().get("type"));
+        map.put("isolated", getProps().get("isolated"));
 
         return map;
     }

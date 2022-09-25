@@ -16,7 +16,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-// Handler value: main.Handler
+// rename Hello
 public class Handler implements RequestHandler<Map<String, Object>, String>{
   private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
@@ -30,6 +30,8 @@ public class Handler implements RequestHandler<Map<String, Object>, String>{
     String json = gson.toJson(event);
     logger.log("EVENT: " + json);
     logger.log("EVENT TYPE: " + event.getClass());
+
+    // todo: text/plain
 
     try {
       Object body = event.get("body");

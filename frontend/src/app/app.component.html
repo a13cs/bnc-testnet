@@ -34,6 +34,7 @@
   <!--<span> Balance: {{balance | json}} </span>-->
   <div *ngIf="balances.length">
       <h4>Acc type:&nbsp;</h4><h3>  {{ accTypeValue }}</h3>
+      <h4>Isolated:&nbsp;</h4><h3>  {{ isAccIsolated }}</h3>
       <h4 *ngFor="let b of balances">Asset {{ b.asset }} &nbsp; {{ b.free }} </h4>
   </div>
   <br>

@@ -62,10 +62,15 @@ public class OrderService {
         }
 
         String usdt = "0";
-        if ("MARGIN".equals(props.get("type"))) {
-            usdt = getMarginAsset(context, "USDT");
+        String type = props.get("type");
+        if ("MARGIN".equals(type)) {
+            if (Boolean.parseBoolean(getProps().get("isolated"))) {
+                usdt = getIsolatedQuoteAsset(context, "BTCUSDT");
+            } else {
+                usdt = getMarginAsset(context, "USDT");
+            }
         }
-        if ("SPOT".equals(props.get("type")) || props.get("type") == null) {
+        if ("SPOT".equals(type) || type == null) {
             usdt = getSpotAsset(context, "USDT");
         }
 
@@ -74,7 +79,7 @@ public class OrderService {
             return new OrderResult();
         }
 
-        BigDecimal freeUsdt = new BigDecimal(usdt /*250*/);
+        BigDecimal freeUsdt = new BigDecimal(usdt);
         BigDecimal quantity = BigDecimal.valueOf(percentage).multiply(freeUsdt);
 
         if (!inTrade && reverseOrderQuantity.intValue() == 0) {
@@ -119,8 +124,6 @@ public class OrderService {
 
     public String getMarginAsset(Context context, String asset) throws IOException, InterruptedException {
         HashMap<String, String> queryParams = new HashMap<>();
-        // todo
-//        GET /sapi/v1/margin/isolated/account (HMAC SHA256) timestamp, recv // add prop 'isolated'
         String resp = ApiClientUtil.get("account", queryParams, context, getProps());
 
         // get asset json
@@ -141,6 +144,35 @@ public class OrderService {
         }
 
         return null;
+    }
+
+    public String getIsolatedQuoteAsset(Context context, String symbol) throws IOException, InterruptedException {
+        HashMap<String, String> queryParams = new HashMap<>();
+
+        String path = "account";
+        String isolated = getProps().get("isolated");
+        if (Boolean.parseBoolean(isolated)) {
+            path = "isolated/" + path;
+        }
+        String resp = ApiClientUtil.get(path, queryParams, context, getProps());
+
+        // get asset json
+        HashMap<String, Object> responseJson = OM.readValue(resp, new TypeReference<HashMap<String, Object>>() {
+        });
+        String assetsJson = OM.writeValueAsString(responseJson.get("assets"));
+        List<Map<String,Object>> assets = OM.readValue(assetsJson, new TypeReference<List<Map<String,Object>>>() {
+        });
+        context.getLogger().log(assets.get(0).toString());
+
+        Map<String, Object> bySymbol = assets.stream().filter(a -> symbol.equals(a.get("symbol"))).findFirst().orElseThrow();
+        String quoteAsset = OM.writeValueAsString(bySymbol.get("quoteAsset"));
+        Map<String,String> value = OM.readValue(quoteAsset, new TypeReference<Map<String, Object>>() { });
+
+        String usdt = value.get("asset");
+
+        context.getLogger().log("Isolated USDT " + usdt);
+
+        return usdt;
     }
 
     private Map<String, String> getProps() {

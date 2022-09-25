@@ -34,7 +34,7 @@ public class UiRest {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/accType")
-    public HashMap<String, Object> accType() throws IOException {
+    public HashMap<String, Object> accType() {
         return marketService.getAccType();
     }
 

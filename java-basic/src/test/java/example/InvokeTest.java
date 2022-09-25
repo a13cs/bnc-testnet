@@ -42,80 +42,79 @@ class InvokeTest {
   static {
     OM.configure(SerializationFeature.INDENT_OUTPUT, true);
   }
-//  @Test
-//  void invokeTest() throws IOException, URISyntaxException {
 
-    // tradingview List of trades CSV
+/*
+  @Test
+  void invokeTest() throws IOException, URISyntaxException {
+//  Cumulate percentage growth from tradingview List of trades CSV
 
-//    List<Double> pr = new ArrayList<>();
-//
-//    URL resource = InvokeTest.class.getClassLoader().getResource("trades.csv");
-//    URI uri = Objects.requireNonNull(resource).toURI();
-//    Path path = Paths.get(uri);
-//
-//    BufferedReader reader = new BufferedReader(new FileReader("./s.csv"));
+    String resourceName = "other/72s_Strategy__Adaptive_Hull_Moving_Average+_pt.1_List_of_Trades_2022-09-14.csv";
+    URL resource = InvokeTest.class.getClassLoader().getResource(resourceName);
+    URI uri = Objects.requireNonNull(resource).toURI();
+    Path path = Paths.get(uri);
+
+    List<String> lines = Files.readAllLines(path);
+
 //    AtomicInteger headerPosition = new AtomicInteger();
-//
-//    final double firstEntry = 100;
-//    final double[] initial = {firstEntry};
-//
-//    List<String> lines = reader.lines().collect(Collectors.toList());
-//    String[] names = lines.get(0).split(",");
-//    for (int i = 0;i < names.length; i++) {
-//      if ("Profit %".equals(names[i])) {
-//        headerPosition.set(i);
-//      }
-//    }
-//    List<String> values = lines.subList(1, lines.size());
-//    logger.info("Trades count: {}", values.size() / 2);
-//
-//    double min = 0;
-//    double hit = 0;
-//
-//    int countMinus = 0;
-//    int countPlus = 0;
-//    for (int i = 0; i < values.size(); i+=2) {
-//      String value = values.get(i).split(",")[headerPosition.get()];
-//      double p = Double.parseDouble(value);
-//
-//      if (p < 0) {
-//        if (p < min) min = p;
-//        hit = initial[0] * p;
-//        countMinus++;
-////        continue;
-//      } else {
-//        countPlus++;
-//      }
-//      if( Math.abs(p) > 1) {
-//        logger.info("x {}", p);
-//      }
-//
-//      // apply 1% commission
-////      p = p - 1;
-//
-////      p = p - 0.010110;
-//
-//      pr.add(p);
-////      logger.info("=================");
-////      logger.info("{} * {}",initial[0],value);
-//      initial[0] = initial[0] + initial[0] * p * 0.01;
-////      logger.info(String.valueOf(initial[0]));
-//    }
-//
-//
-//    logger.info("=================");
-//    logger.info("countMinus: {}", countMinus);
-//    logger.info("countPlus: {}", countPlus);
-//    logger.info("End " + initial[0]);
-//    logger.info("min " + min);
-//    logger.info("hit " + hit);
-//
-//    double profit = initial[0] - firstEntry;
-//    logger.info(" % " + (profit/firstEntry) * 100);
-//
-//  }
+    int headerPosition = 0;
+    final double firstEntry = 100;
+    final double[] initial = {firstEntry};
 
-  // TODO: test margin, no sapi on testnet
+    String[] names = lines.get(0).split(",");
+    for (int i = 0;i < names.length; i++) {
+      if ("Profit %".equals(names[i])) {
+//        headerPosition.set(i);
+        headerPosition = i;
+      }
+    }
+    List<String> values = lines.subList(1, lines.size());
+    logger.info("Trades count: {}", values.size() / 2);
+
+    double min = 0;
+    double hit = 0;
+
+    int countMinus = 0;
+    int countPlus = 0;
+    for (int i = 0; i < values.size(); i+=2) {
+      String value = values.get(i).split(",")[headerPosition];
+      double p = Double.parseDouble(value);
+
+      if (p < 0) {
+        if (p < min) min = p;
+        hit = initial[0] * p;
+        countMinus++;
+//        continue;
+      } else {
+        countPlus++;
+      }
+      if( Math.abs(p) > 1) {
+        logger.info("x {}", p);
+      }
+
+      // apply 1% commission
+//      p = p - 1;
+
+//      logger.info("{} * {}",initial[0],value);
+      initial[0] = initial[0] + initial[0] * p * 0.01;
+    }
+
+
+    logger.info("=================");
+    logger.info("start: {}", firstEntry);
+    logger.info("count loss: {}", countMinus);
+    logger.info("count gain: {}", countPlus);
+    logger.info("End " + initial[0]);
+    logger.info("max loss " + min);
+    logger.info("hit " + hit);
+
+    double profit = initial[0] - firstEntry;
+    double v = (profit / firstEntry) * 100;
+
+    BigDecimal rounded = BigDecimal.valueOf(v).round(new MathContext(8, RoundingMode.DOWN));
+    logger.info("Result % " + rounded);
+
+  }
+*/
 
 // test send real order
   @Test
@@ -129,9 +128,9 @@ class InvokeTest {
 
     Map<String, Object> tvSignal = OM.readValue(json, new TypeReference<HashMap<String, Object>>(){});
 
-    Map<String,Object> event = new HashMap<>();
-    event.put("isBase64Encoded", false);
-    event.put("body", tvSignal);
+//    Map<String,Object> event = new HashMap<>();
+//    event.put("isBase64Encoded", false);
+//    event.put("body", tvSignal);
     String response = new Handler().handleRequest(tvSignal, context);
 
     String expected = tvSignal.get("action").toString().split("_")[0];
@@ -178,7 +177,8 @@ class InvokeTest {
 
     BigDecimal price = new BigDecimal(p);
     BigDecimal u = accBalanceBtc.multiply(price);
-    BigDecimal diff = u.subtract(accBalanceUsdt).round(new MathContext(8, RoundingMode.UP));
+    BigDecimal diff = u.subtract(accBalanceUsdt)
+            .round(new MathContext(8, RoundingMode.UP));
 
     context.getLogger().log("Balance diff USDT: " + diff.toPlainString());
 
