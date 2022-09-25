@@ -22,3 +22,7 @@ A pine script example strategy
 
 
 Order quantity, symbol and name are set up in application.properties (via 'Add api-key' button).
+
+
+###### NOTE
+A hard page refresh is needed after the api-key is changed.
