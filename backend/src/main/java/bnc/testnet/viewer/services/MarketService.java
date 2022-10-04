@@ -1,8 +1,8 @@
 package bnc.testnet.viewer.services;
 
 import model.OrderResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import util.ApiClientUtil;
@@ -15,7 +15,7 @@ import java.util.Map;
 @Service
 public class MarketService {
 
-    private static final Logger logger = LoggerFactory.getLogger(MarketService.class);
+//    private static final Logger logger = LoggerFactory.getLogger(MarketService.class);
 
     @Value("${name}")
     private String name;
@@ -40,7 +40,7 @@ public class MarketService {
     public MarketService() {    }
 
     public OrderResult sendOrder(String side, BigDecimal quoteOrderQty, String symbol) throws IOException, InterruptedException {
-        logger.info("Sending {} order.", side);
+//        logger.info("Sending {} order.", side);
 
         return ApiClientUtil.sendOrder(
                 side,
