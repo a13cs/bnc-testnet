@@ -119,24 +119,24 @@ class InvokeTest {
 // test send real order
   @Test
   void orderTest() throws IOException, URISyntaxException, InterruptedException {
-    logger.info("Order TEST");
-    Context context = new TestContext();
-
-    balanceDiff(context);
-
-    String json = loadJsonFile("wh.json");
-
-    Map<String, Object> tvSignal = OM.readValue(json, new TypeReference<HashMap<String, Object>>(){});
-
-//    Map<String,Object> event = new HashMap<>();
-//    event.put("isBase64Encoded", false);
-//    event.put("body", tvSignal);
-    String response = new Hello().handleRequest(tvSignal, context);
-
-    String expected = tvSignal.get("action").toString().split("_")[0];
-    String actual = OM.readValue(response, OrderResult.class).getSide();
-
-    assertTrue(expected.equalsIgnoreCase(actual));
+//    logger.info("Order TEST");
+//    Context context = new TestContext();
+//
+//    balanceDiff(context);
+//
+//    String json = loadJsonFile("wh.json");
+//
+//    Map<String, Object> tvSignal = OM.readValue(json, new TypeReference<HashMap<String, Object>>(){});
+//
+////    Map<String,Object> event = new HashMap<>();
+////    event.put("isBase64Encoded", false);
+////    event.put("body", tvSignal);
+//    String response = new Hello().handleRequest(tvSignal, context);
+//
+//    String expected = tvSignal.get("action").toString().split("_")[0];
+//    String actual = OM.readValue(response, OrderResult.class).getSide();
+//
+//    assertTrue(expected.equalsIgnoreCase(actual));
   }
 
   private static String loadJsonFile(String filePath) throws URISyntaxException {
@@ -158,58 +158,58 @@ class InvokeTest {
 
   // split assets
   private void balanceDiff(Context context) throws IOException, InterruptedException {
-    String accType = getProps().get("type");
-    OrderService orderService = new OrderService();
-
-    String qCcy = "0";
-    String ccy = "0";
-    if ("SPOT".equals(accType)) {
-      qCcy = orderService.getSpotAsset(context, "USDT");
-      ccy = orderService.getSpotAsset(context, "BTC");
-    } else if ("MARGIN".equals(accType)) {
-      qCcy = orderService.getMarginAsset(context, "USDT");
-      ccy = orderService.getMarginAsset(context, "BTC");
-    }
-    BigDecimal accBalanceUsdt = new BigDecimal(qCcy);
-    BigDecimal accBalanceBtc = new BigDecimal(ccy);
-
-    String p = getCurrentPrice(context, getProps());
-
-    BigDecimal price = new BigDecimal(p);
-    BigDecimal u = accBalanceBtc.multiply(price);
-    BigDecimal diff = u.subtract(accBalanceUsdt)
-            .round(new MathContext(8, RoundingMode.UP));
-
-    context.getLogger().log("Balance diff USDT: " + diff.toPlainString());
-
-    // use quote/total < 0.4
-    BigDecimal total = accBalanceUsdt.add(u);
-    double threshold = total.multiply(new BigDecimal("0.45")).doubleValue();
-    context.getLogger().log("Balance diff threshold: " + (long) threshold);
-
-    if (diff.abs().doubleValue() > threshold) {
-      String quoteOrderQty = diff.abs().multiply(new BigDecimal("0.5")).toPlainString();
-      if (diff.signum() > 0) {
-        ApiClientUtil.sendOrder("SELL", quoteOrderQty, "BTCUSDT", context, getProps());
-      } else {
-        ApiClientUtil.sendOrder("BUY", quoteOrderQty, "BTCUSDT", context, getProps());
-      }
-    }
+//    String accType = getProps().get("type");
+//    OrderService orderService = new OrderService();
+//
+//    String qCcy = "0";
+//    String ccy = "0";
+//    if ("SPOT".equals(accType)) {
+//      qCcy = orderService.getSpotAsset(context, "USDT");
+//      ccy = orderService.getSpotAsset(context, "BTC");
+//    } else if ("MARGIN".equals(accType)) {
+//      qCcy = orderService.getMarginAsset(context, "USDT");
+//      ccy = orderService.getMarginAsset(context, "BTC");
+//    }
+//    BigDecimal accBalanceUsdt = new BigDecimal(qCcy);
+//    BigDecimal accBalanceBtc = new BigDecimal(ccy);
+//
+//    String p = getCurrentPrice(context, getProps());
+//
+//    BigDecimal price = new BigDecimal(p);
+//    BigDecimal u = accBalanceBtc.multiply(price);
+//    BigDecimal diff = u.subtract(accBalanceUsdt)
+//            .round(new MathContext(8, RoundingMode.UP));
+//
+//    context.getLogger().log("Balance diff USDT: " + diff.toPlainString());
+//
+//    // use quote/total < 0.4
+//    BigDecimal total = accBalanceUsdt.add(u);
+//    double threshold = total.multiply(new BigDecimal("0.45")).doubleValue();
+//    context.getLogger().log("Balance diff threshold: " + (long) threshold);
+//
+//    if (diff.abs().doubleValue() > threshold) {
+//      String quoteOrderQty = diff.abs().multiply(new BigDecimal("0.5")).toPlainString();
+//      if (diff.signum() > 0) {
+//        ApiClientUtil.sendOrder("SELL", quoteOrderQty, "BTCUSDT", context, getProps());
+//      } else {
+//        ApiClientUtil.sendOrder("BUY", quoteOrderQty, "BTCUSDT", context, getProps());
+//      }
+//    }
   }
 
-  private Map<String, String> getProps() {
-    Map<String, String> props = new HashMap<>();
-
-    InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("application.properties");
-    if (inputStream != null) {
-      List<String> lines = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.toList());
-      lines.forEach(l -> {
-        String[] pair = l.split("=");
-        // take first
-        props.putIfAbsent(pair[0], pair[1]);
-      });
-    }
-    return props;
-  }
+//  private Map<String, String> getProps() {
+//    Map<String, String> props = new HashMap<>();
+//
+//    InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("application.properties");
+//    if (inputStream != null) {
+//      List<String> lines = new BufferedReader(new InputStreamReader(inputStream)).lines().collect(Collectors.toList());
+//      lines.forEach(l -> {
+//        String[] pair = l.split("=");
+//        // take first
+//        props.putIfAbsent(pair[0], pair[1]);
+//      });
+//    }
+//    return props;
+//  }
 
 }

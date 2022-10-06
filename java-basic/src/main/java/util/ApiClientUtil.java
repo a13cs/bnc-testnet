@@ -12,9 +12,9 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+//import java.net.http.HttpClient;
+//import java.net.http.HttpRequest;
+//import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -38,13 +38,13 @@ public final class ApiClientUtil {
 
     public static String getServerTime(Context context, Map<String, String> props) throws IOException, InterruptedException {
         String time = getSimple("time", Collections.emptyMap(), props);
-        HashMap<String, String> responseJson = OM.readValue(time, new TypeReference<HashMap<String, String>>() {
+        HashMap<String, String> responseJson = (HashMap<String, String>) OM.readValue(time, new TypeReference<HashMap<String, String>>() {
         });
         if (context != null) {
             context.getLogger().log("time " + time);
         }
 
-        return responseJson.get("serverTime");
+        return (String) responseJson.get("serverTime");
     }
 
     public static String getCurrentPrice(Context context, Map<String, String> props) throws IOException, InterruptedException {
@@ -56,10 +56,10 @@ public final class ApiClientUtil {
         if (context != null) {
             context.getLogger().log("Current ticker/price " + priceResponse);
         }
-        HashMap<String, String> responseJson = OM.readValue(priceResponse, new TypeReference<HashMap<String, String>>() {
+        HashMap<String, String> responseJson = (HashMap<String, String>) OM.readValue(priceResponse, new TypeReference<HashMap<String, String>>() {
         });
 
-        return responseJson.get("price");
+        return (String) responseJson.get("price");
     }
 
     public static String get(
@@ -75,40 +75,41 @@ public final class ApiClientUtil {
         StringBuilder sb = new StringBuilder();
         sb.append("timestamp=").append(milli);
 
-        queryParams.put("recvWindow", props.get("recv-window"));
-        queryParams.forEach((k, v) -> sb.append("&").append(k).append("=").append(v));
+        queryParams.put("recvWindow", (String) props.get("recv-window"));
+//        queryParams.forEach((k, v) -> sb.append("&").append(k).append("=").append(v));
 
-        boolean isolated = Boolean.parseBoolean(props.get("isolated"));
+        boolean isolated = Boolean.parseBoolean((String) props.get("isolated"));
         String param = Boolean.toString(isolated).toUpperCase();
 
         String url = null;
-        if ("MARGIN".equals(props.get("type"))) {
-            url = props.get("rest-uri-margin") + path;
+        if ("MARGIN".equals((String) props.get("type"))) {
+            url = (String) props.get("rest-uri-margin") + path;
             if (path.contains("myTrades")) {
                 sb.append("&").append("isIsolated=").append(param);
             }
         }
-        if ("SPOT".equals(props.get("type")) || props.get("type") == null) {
-            url = props.get("rest-uri") + path;
+        if ("SPOT".equals((String) props.get("type")) || (String) props.get("type") == null) {
+            url = (String) props.get("rest-uri") + path;
         }
 
-        String signature = ApiClientUtil.createHmacSignature(props.get("api-secret"), sb.toString());
+        String signature = ApiClientUtil.createHmacSignature((String) props.get("api-secret"), sb.toString());
         sb.append("&signature=").append(signature);
 
         url += "?" + sb;
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .headers("X-MBX-APIKEY", props.get("api-key"))
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        if (context != null) {
-            context.getLogger().log("response: " + response.body());
-        }
-
-        return response.body();
+//        HttpClient client = HttpClient.newBuilder().build();
+//        HttpRequest request = HttpRequest.newBuilder()
+//                .uri(URI.create(url))
+//                .GET()
+//                .headers("X-MBX-APIKEY", (String) props.get("api-key"))
+//                .build();
+//
+//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//        if (context != null) {
+//            context.getLogger().log("response: " + response.body());
+//        }
+//
+//        return response.body();
+        return "";
     }
 
     public static String getSimple(
@@ -118,18 +119,19 @@ public final class ApiClientUtil {
     ) throws IOException, InterruptedException {
 
         StringBuilder sb = new StringBuilder();
-        queryParams.forEach((k, v) -> sb.append("&").append(k).append("=").append(v));
+//        queryParams.forEach((k, v) -> sb.append("&").append(k).append("=").append(v));
         String params = sb.length() > 0 ? sb.substring(1) : sb.toString();
 
-        String url = props.get("rest-uri") + path + "?" + params;
+        String url = (String) props.get("rest-uri") + path + "?" + params;
 
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .build();
-
-        return client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+//        HttpClient client = HttpClient.newBuilder().build();
+//        HttpRequest request = HttpRequest.newBuilder()
+//                .uri(URI.create(url))
+//                .GET()
+//                .build();
+//
+//        return client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+        return "";
     }
 
     public static OrderResult sendOrder(
@@ -146,7 +148,7 @@ public final class ApiClientUtil {
         StringBuilder sb = new StringBuilder()
                 .append("timestamp=").append(serverTime)
                 .append("&")
-                .append("recvWindow=").append(props.get("recv-window"))  // 60_000
+                .append("recvWindow=").append((String) props.get("recv-window"))  // 60_000
                 .append("&")
                 .append("side=").append(side)
                 .append("&")
@@ -159,35 +161,37 @@ public final class ApiClientUtil {
                 .append("newOrderRespType=").append("RESULT");
 
 
-        boolean isolated = Boolean.parseBoolean(props.get("isolated"));
+        boolean isolated = Boolean.parseBoolean((String) props.get("isolated"));
         String param = Boolean.toString(isolated).toUpperCase();
 
         String url = null;
-        if ("MARGIN".equals(props.get("type"))) {
-            url = props.get("rest-uri-margin") + "order";
+        if ("MARGIN".equals((String) props.get("type"))) {
+            url = (String) props.get("rest-uri-margin") + "order";
             sb.append("&").append("isIsolated=").append(param);
         }
-        if ("SPOT".equals(props.get("type")) || props.get("type") == null) {
-            url = props.get("rest-uri") + "order";
+        if ("SPOT".equals((String) props.get("type")) || (String) props.get("type") == null) {
+            url = (String) props.get("rest-uri") + "order";
         }
 
-        String signature = ApiClientUtil.createHmacSignature(props.get("api-secret"), sb.toString());
+        String signature = ApiClientUtil.createHmacSignature((String) props.get("api-secret"), sb.toString());
         sb.append("&signature=").append(signature);
 
         url += "?" + sb;
-        HttpClient client = HttpClient.newBuilder().build();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .POST(HttpRequest.BodyPublishers.noBody())
-                .headers("X-MBX-APIKEY", props.get("api-key"))
-                .build();
+//        HttpClient client = HttpClient.newBuilder().build();
+//        HttpRequest request = HttpRequest.newBuilder()
+//                .uri(URI.create(url))
+//                .POST(HttpRequest.BodyPublishers.noBody())
+//                .headers("X-MBX-APIKEY", (String) props.get("api-key"))
+//                .build();
+//
+//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//        if (context != null) {
+//            context.getLogger().log("response: " + response.body());
+//        }
+//
+//        return OM.readValue(response.body(), OrderResult.class);
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        if (context != null) {
-            context.getLogger().log("response: " + response.body());
-        }
-
-        return OM.readValue(response.body(), OrderResult.class);
+        return new OrderResult();
     }
 
     public static String createHmacSignature(String secret, String inputText) {

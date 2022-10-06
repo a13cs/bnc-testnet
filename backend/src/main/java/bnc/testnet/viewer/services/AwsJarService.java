@@ -31,29 +31,29 @@ public class AwsJarService {
     public static byte[] updateZipFile(InputStream is, Map<String, Object> map, String newEntryName) throws IOException {
         ByteArrayOutputStream o = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
-
-        ZipInputStream zin = new ZipInputStream(is);
-        ZipOutputStream out = new ZipOutputStream(o);
-
-        for (ZipEntry entry = zin.getNextEntry(); entry != null; entry = zin.getNextEntry()) {
-            if (newEntryName.equals(entry.getName())) {
-                continue;
-            }
-            compressEntry(entry, out, zin);
-        }
-        zin.close();
-
-        List<String> updated = new ArrayList<>();
-        map.forEach((k, v) -> updated.add(String.format("%s=%s",k,v)));
-        String newContent = updated.stream().collect(Collectors.joining(System.lineSeparator()));
-
-        // Compress the file
-        InputStream in = new ByteArrayInputStream(newContent.getBytes());
-        compressEntry(new ZipEntry(newEntryName), out, in);
-        in.close();
-
-        // Complete the ZIP file
-        out.close();
+//
+//        ZipInputStream zin = new ZipInputStream(is);
+//        ZipOutputStream out = new ZipOutputStream(o);
+//
+//        for (ZipEntry entry = zin.getNextEntry(); entry != null; entry = zin.getNextEntry()) {
+//            if (newEntryName.equals(entry.getName())) {
+//                continue;
+//            }
+//            compressEntry(entry, out, zin);
+//        }
+//        zin.close();
+//
+//        List<String> updated = new ArrayList<>();
+//        map.forEach((k, v) -> updated.add(String.format("%s=%s",k,v)));
+//        String newContent = updated.stream().collect(Collectors.joining(System.lineSeparator()));
+//
+//        // Compress the file
+//        InputStream in = new ByteArrayInputStream(newContent.getBytes());
+//        compressEntry(new ZipEntry(newEntryName), out, in);
+//        in.close();
+//
+//        // Complete the ZIP file
+//        out.close();
 
         return o.toByteArray();
     }
