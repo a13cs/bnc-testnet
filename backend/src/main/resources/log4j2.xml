@@ -14,7 +14,7 @@
         <Root level="error">
             <AppenderRef ref="StdErr"/>
         </Root>
-        <Logger name="ch.algotrader.ema" level="debug" additivity="false">
+        <Logger name="bnc.testnet" level="debug" additivity="false">
             <AppenderRef ref="StdOut"/>
         </Logger>
     </Loggers>
