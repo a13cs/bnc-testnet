@@ -15,6 +15,9 @@ import java.net.URI;
 //import java.net.http.HttpClient;
 //import java.net.http.HttpRequest;
 //import java.net.http.HttpResponse;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -177,21 +180,21 @@ public final class ApiClientUtil {
         sb.append("&signature=").append(signature);
 
         url += "?" + sb;
-//        HttpClient client = HttpClient.newBuilder().build();
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create(url))
-//                .POST(HttpRequest.BodyPublishers.noBody())
-//                .headers("X-MBX-APIKEY", (String) props.get("api-key"))
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//        if (context != null) {
-//            context.getLogger().log("response: " + response.body());
-//        }
-//
-//        return OM.readValue(response.body(), OrderResult.class);
+        HttpClient client = HttpClient.newBuilder().build();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .headers("X-MBX-APIKEY", (String) props.get("api-key"))
+                .build();
 
-        return new OrderResult();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (context != null) {
+            context.getLogger().log("response: " + response.body());
+        }
+
+        return OM.readValue(response.body(), OrderResult.class);
+
+//        return new OrderResult();
     }
 
     public static String createHmacSignature(String secret, String inputText) {

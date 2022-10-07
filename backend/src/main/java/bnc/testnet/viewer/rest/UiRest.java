@@ -33,6 +33,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -97,19 +98,22 @@ public class UiRest {
 
     @RequestMapping(method = RequestMethod.GET, path = "/test", produces = "application/octet-stream")
     public byte[] test() throws ClassNotFoundException, IOException, CompileException, URISyntaxException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        String srcJC = "commons-compiler-3.1.9-SNAPSHOT" + "-sources.jar";
-        List<Resource> srcJCResorces = getResourcesAsString(srcJC);
-        String srcJ = "janino-3.1.9-SNAPSHOT" + "-sources.jar";
-        List<Resource> srcJList = getResourcesAsString(srcJ);
+//        String srcJC = "commons-compiler-3.1.9-SNAPSHOT" + "-sources.jar";
+//        List<Resource> srcJCResorces = getResourcesAsString(srcJC);
+//        String srcJ = "janino-3.1.9-SNAPSHOT" + "-sources.jar";
+//        List<Resource> srcJList = getResourcesAsString(srcJ);
+
+        ICompiler compiler = new CompilerFactory().newCompiler();
+//        ICompiler compiler = new org.codehaus.commons.compiler.jdk.Compiler();  // jdk
 
         String srcJarName = "demo-be-0.0.1-SNAPSHOT" + "-sources.jar";
         List<Resource> resourcesTarget = getLocalJarResourcesAsString(srcJarName);
-        String baseJarName = "java-basic-0.0.1-SNAPSHOT" + "-sources.jar";
-        List<Resource> resourcesBase = getLocalJarResourcesAsString(baseJarName);
+//        String baseJarName = "java-basic-0.0.1-SNAPSHOT" + "-sources.jar";
+//        List<Resource> resourcesBase = getLocalJarResourcesAsString(baseJarName);
 
 //        resourcesTarget.addAll(srcJCResorces);
 //        resourcesTarget.addAll(srcJList);
-        resourcesTarget.addAll(resourcesBase);
+//        resourcesTarget.addAll(resourcesBase);
 
 /*
         String thisFileName = "target/demo-be-0.0.1-SNAPSHOT.jar";
@@ -124,15 +128,20 @@ public class UiRest {
 //        java.lang.ClassNotFoundException:
 //        Lkotlin/reflect/jvm/internal/impl/resolve/constants/CompileTimeConstant$Parameters;
 
-        FileSystemProvider provider = (FileSystemProvider) FileSystemProvider.installedProviders().get(1);
-        String scheme = provider.getScheme();
-//        System.out.println(scheme);
 
-        String srcUrl = getClass()
+        URL location = getClass()
                 .getProtectionDomain()
                 .getCodeSource()
-                .getLocation()
-                .toURI().toString();
+                .getLocation();
+        String scheme = location.toURI().getScheme();
+        FileSystemProvider provider = (FileSystemProvider) FileSystemProvider.installedProviders().get(0);
+        for (FileSystemProvider p : FileSystemProvider.installedProviders()) {
+            if (p.getScheme().equals(scheme)) {
+                provider = p;
+            }
+        }
+
+        String srcUrl = location.toURI().toString();
         String suffix = "";
         if (srcUrl.contains("!")) {
             // get running jar
@@ -140,36 +149,54 @@ public class UiRest {
             suffix = "!/";
         }
         URL url = new URL(srcUrl + suffix);
-        // get provider by scheme
 
-//        URL url = new URL("jar:file:/C:/Users/Al/ws/bnc-testnet/backend/target/demo-be-0.0.1-SNAPSHOT.jar!/");
         Map<String, byte[]> localJarResourcesAll = new HashMap<>();
+        if (scheme.equals("jar")) {
 
-        Map<String, String> env = Collections.singletonMap("create", "true");
-        FileSystem fileSystem = provider.newFileSystem(url.toURI(), env);
-        Stream<Path> list = Files.list(fileSystem.getPath("BOOT-INF/lib/"));
-        try {
-            List<Path> paths = (List<Path>) list.collect(Collectors.toList());
-//            paths.add(fileSystem.getPath("org"));
+            JarFile jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
+            List<JarEntry> entries = (List<JarEntry>) jarFile.stream().collect(Collectors.toList());
 
-            for (Path path : paths) {
-                JarURLConnection jarURLConnection = (JarURLConnection) path.toUri().toURL().openConnection();
-                JarEntry e = jarURLConnection.getJarEntry();
-                InputStream is = jarURLConnection.getJarFile().getInputStream(e);
-
-                localJarResourcesAll.putAll(getLocalJarResources(new JarInputStream(is))); // e.getSize()
+            for (JarEntry e : entries) {
+                if (e.getName().endsWith(".class")) {
+                    InputStream is = jarFile.getInputStream(e);
+                    int size = (int) e.getSize();
+                    byte[] bytes = new byte[size];
+                    int read = is.read(bytes);
+                    localJarResourcesAll.putIfAbsent(e.getName(), bytes);
+                }
             }
 
-        } catch (Exception ignored) {
+
+//        JarInputStream zin = new JarInputStream(url.openConnection().getInputStream());
+//        Map<String, byte[]> localJarResourcesAll = getLocalJarResources(zin);
+
+//        URL url = new URL("jar:file:/C:/Users/Al/ws/bnc-testnet/backend/target/demo-be-0.0.1-SNAPSHOT.jar!/");
+
+            Map<String, String> env = Collections.singletonMap("create", "true");
+            FileSystem fileSystem = provider.newFileSystem(url.toURI(), env);
+            Stream<Path> list = Files.list(fileSystem.getPath("BOOT-INF/lib/"));
+            try {
+                List<Path> paths = (List<Path>) list.collect(Collectors.toList());
+//            paths.add(fileSystem.getPath("org"));
+
+                for (Path path : paths) {
+                    JarURLConnection jarURLConnection = (JarURLConnection) path.toUri().toURL().openConnection();
+                    JarEntry e = jarURLConnection.getJarEntry();
+                    InputStream is = jarURLConnection.getJarFile().getInputStream(e);
+
+                    localJarResourcesAll.putAll(getLocalJarResources(new JarInputStream(is))); // e.getSize()
+                }
+
+            } catch (Exception ignored) {
+            }
+
+            fileSystem.close();
+
+        } else {
+//            compiler.setClassPath();
         }
 
-        fileSystem.close();
-
         Map<String, byte[]> classesMap = new HashMap<String, byte[]>();
-
-
-        ICompiler compiler = new CompilerFactory().newCompiler();
-//        ICompiler compiler = new org.codehaus.commons.compiler.jdk.Compiler();  // jdk
 
 
 //        Map<String, byte[]> localJarResources = new HashMap<>(localJarResourcesAll);
@@ -208,13 +235,13 @@ public class UiRest {
         resourcesTarget.add(new StringResource(
                 "pkg2/B.java",
                 "package pkg2; " +
-                     "import bnc.testnet.viewer.services.Test; " +
+                        "import bnc.testnet.viewer.services.Test; " +
 
-                     "public class B { " +
+                        "public class B { " +
                         "public static void meth() { " +
-                            "new Test().run(); " +
+                        "new Test().run(); " +
                         "} " +
-                    "}"
+                        "}"
         ));
         compiler.setSourceCharset(Charset.defaultCharset());
 
