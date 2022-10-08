@@ -80,7 +80,7 @@ public class StrategyService implements InitializingBean {
         // + use pine
 
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(series);
-        // + keep list to add indicator values before return
+        // + keep list to add indicator at the end
         EMAIndicator fastEma = new EMAIndicator(closePriceIndicator, emaPeriodShort);
         EMAIndicator slowEma = new EMAIndicator(closePriceIndicator, emaPeriodLong);
 
