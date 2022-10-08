@@ -3,6 +3,7 @@ package bnc.testnet.viewer.rest;
 import bnc.testnet.viewer.services.AwsJarService;
 import bnc.testnet.viewer.services.CompService;
 import bnc.testnet.viewer.services.MarketService;
+import bnc.testnet.viewer.services.StrategyService;
 import model.OrderResult;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompiler;
@@ -43,6 +44,9 @@ public class UiRest {
 
     @Autowired
     CompService compService;
+
+    @Autowired
+    StrategyService strategyService;
 
 
     private static final Logger logger = LoggerFactory.getLogger(UiRest.class);
@@ -211,6 +215,21 @@ public class UiRest {
         map.put("interval", /*interval*/ interval);
 
         return marketService.getSimple("uiKlines", map);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/testStrategy")
+    public Map<String,Object> testStrategy() throws IOException, InterruptedException {
+
+        String interval = "1m";
+        String klines = klines("0", "0", interval);
+
+        String barSeconds = interval
+                .replaceAll("[A-Z]","")
+                .replaceAll("[a-z]","");
+        int seconds = Integer.parseInt(barSeconds) * 60;
+
+        // buy/sell markers and indicator plots
+        return strategyService.runTest(klines, String.valueOf(seconds));
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/order/{side}/{symbol}/{quoteQty}")

@@ -16,6 +16,10 @@ export class AppComponent implements OnInit {
   data: any[] = []
   series: any = []
 
+// indicators: any[]
+  fastEma: any = []
+  shortEma: any = []
+
   static isolated: string = "FALSE"
   get isAccIsolated() {
     return AppComponent.isolated
@@ -75,16 +79,16 @@ export class AppComponent implements OnInit {
 
     this.series = chart.addCandlestickSeries();
 
-//     // long
-//     this.smaLineFirst = chart.addLineSeries({
-//       color: 'rgb(10,22,125)',
-//       lineWidth: 3,
-//     });
-//
-//     this.smaLineSecond = chart.addLineSeries({
-//       color: 'rgb(4,107,232)',
-//       lineWidth: 2,
-//     });
+    // long
+    this.fastEma = chart.addLineSeries({
+      color: 'rgb(10,22,125)',
+      lineWidth: 3,
+    });
+
+    this.shortEma = chart.addLineSeries({
+      color: 'rgb(4,107,232)',
+      lineWidth: 2,
+    });
 
     // chart.addHistogramSeries()
 
@@ -218,6 +222,11 @@ export class AppComponent implements OnInit {
           this.series.setMarkers(signals)
         })
       })
+
+
+
+      // add indicators: fastEma, slowEma
+      // add test signals
 
 //       chart.timeScale().setVisibleRange({
 //           from: (new Date(Date.UTC(2018, 0, 1, 0, 0, 0, 0))).getTime() / 1000,
