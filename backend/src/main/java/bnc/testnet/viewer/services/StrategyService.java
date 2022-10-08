@@ -204,18 +204,18 @@ public class StrategyService implements InitializingBean {
     private void evaluateLogic(int index, BarSeries series, Strategy strategy, List<String[]> signals, boolean when) {
         try {
             if (when) {
+                ZonedDateTime endTime = series.getBar(index).getEndTime();
+                ZonedDateTime nextOpenTime = series.getBar(index + 1).getBeginTime();
                 if (strategy.shouldEnter(index)) {
                     // buy
-                    logger.info("!!!!!!!! BUY !!!!!!!!!)");
-                    //                    accService.sendOrder("buy", quantity, symbol);
-                    ZonedDateTime endTime = series.getBar(index).getEndTime();
-                    signals.add(new String[]{Long.toString(endTime.toEpochSecond()), "B"});
+                    logger.debug("BUY)");
+                    // accService.sendOrder("buy", quantity, symbol);
+                    signals.add(new String[]{Long.toString(nextOpenTime.toEpochSecond()), "B"});
                 } else if (strategy.shouldExit(index)) {
                     //sell or close
-                    logger.info("!!!!!!!! SELL !!!!!!!!!");
-                    ZonedDateTime endTime = series.getBar(index).getEndTime();
-                    signals.add(new String[]{Long.toString(endTime.toEpochSecond()), "S"});
-                    //                    accService.sendOrder("sell", quantity, symbol);
+                    logger.debug("SELL");
+                    signals.add(new String[]{Long.toString(nextOpenTime.toEpochSecond()), "S"});
+                    // accService.sendOrder("sell", quantity, symbol);
                 }
             }
         } catch (NullPointerException npe) {
