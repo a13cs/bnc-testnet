@@ -17,8 +17,8 @@ export class AppComponent implements OnInit {
   series: any = []
 
 // indicators: any[]
-  fastEma: any = []
-  shortEma: any = []
+//   fastEma: any = []
+//   shortEma: any = []
 
   static isolated: string = "FALSE"
   get isAccIsolated() {
@@ -79,16 +79,16 @@ export class AppComponent implements OnInit {
 
     this.series = chart.addCandlestickSeries();
 
-    // long
-    this.fastEma = chart.addLineSeries({
-      color: 'rgb(10,22,125)',
-      lineWidth: 3,
-    });
 
-    this.shortEma = chart.addLineSeries({
-      color: 'rgb(4,107,232)',
-      lineWidth: 2,
-    });
+//     this.fastEma = chart.addLineSeries({
+//       color: 'rgb(10,22,125)',
+//       lineWidth: 3,
+//     });
+//
+//     this.shortEma = chart.addLineSeries({
+//       color: 'rgb(4,107,232)',
+//       lineWidth: 2,
+//     });
 
     // chart.addHistogramSeries()
 
@@ -176,14 +176,14 @@ export class AppComponent implements OnInit {
 
 
 
-//   use datepicker
+//   + use date-picker
     let start = new Date(Date.UTC(2022, 8, 22, 0, 0, 0, 0)).getTime() // 1000
 //     let end = new Date(Date.UTC(2022, 12, 1, 0, 0, 0, 0)).getTime() // 1000
     let end = new Date().getTime() // 1000
     console.log("start: " + start)
     console.log("end: " + end)
 
-    let interval = '5m'
+    let interval = '1m'
     this.http.get<any[]>(this.prefix + '/klines/' + /* start */ 0 + '/' + /* end */ 0 + '/' + interval).subscribe(
       d => {
         let lineData: any[] = []
@@ -219,14 +219,56 @@ export class AppComponent implements OnInit {
               text: (s['quoteQty']) || ''
             }
           })
-          this.series.setMarkers(signals)
+          // + use separate chart
+//           this.series.setMarkers(signals)
         })
       })
 
+      // add test signals
+      this.http.get<Result>(this.prefix + '/testStrategy').subscribe( d => {
 
+        let sig: any[] = d.signals.map(s => {
+          return {
+            time:  +s[0] /1000 as UTCTimestamp,
+            color: s[1] === 'B' ? 'rgb(7,130,19)' : 'rgb(113,10,11)',
+            position: 'belowBar',
+            shape: s[1] === 'B' ? "arrowUp" : "arrowDown",
+            text: (s[1]) || ''
+          }
+        })
+        this.series.setMarkers(sig)
+      })
 
       // add indicators: fastEma, slowEma
-      // add test signals
+      this.http.get<Result>(this.prefix + '/testStrategy').subscribe( d => {
+
+        d.indicators.forEach(i => {
+          console.log(i.name)
+
+          let lineSeries = chart.addLineSeries({
+            color: i.color, // 'rgb(4,107,232)',
+            lineWidth: 2,
+          });
+
+          let lineData: any[] = i.values.map(ema => {
+            return {
+              time:  +ema[0] /1000 as UTCTimestamp,
+              value: ema[1] || 0
+            }
+          })
+
+          lineSeries.setData(lineData)
+        });
+
+//         let sEma: any[] = d['indicators']['fastEma_Line_green'].map(ema => {
+//           return {
+//             time:  +ema[0] /1000 as UTCTimestamp,
+//             value: ema[1] || 0
+//           }
+//         })
+//         this.slowEma.setData(sEma)
+      })
+
 
 //       chart.timeScale().setVisibleRange({
 //           from: (new Date(Date.UTC(2018, 0, 1, 0, 0, 0, 0))).getTime() / 1000,
@@ -291,4 +333,16 @@ export class AppComponent implements OnInit {
     asset: string,
     free: string,
   //   locked: string
+  }
+
+  export interface Result {
+    signals: any[],
+    indicators: Indicator[],
+  }
+
+  export interface Indicator {
+    name: string,
+    type: string,
+    color: string,
+    values: any[]
   }

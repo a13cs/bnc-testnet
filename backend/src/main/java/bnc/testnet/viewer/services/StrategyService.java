@@ -60,27 +60,27 @@ public class StrategyService implements InitializingBean {
 //        strategy = new BaseStrategy(entryRule, exitRule);
     }
 
-    public Map<String,Object> runTest(String klines, String interval) throws IOException {
+    public Map<String,Object> runTest(String klines, String interval, String pine) throws IOException {
         Map<String,Object> results = new HashMap<>();
 
-        Map<String, List<String[]>> indicators = new HashMap<>();
         List<String[]> signals = new ArrayList<>();
+        List<Map<String, Object>> indicators = new ArrayList<>();
 
         results.put("signals", signals);
         results.put("indicators", indicators);
 
         int emaPeriodShort = 20;
-        int emaPeriodLong  = 50;
+        int emaPeriodLong  = 80;
 
-        BarSeries series = new BaseBarSeriesBuilder().withName("bnc_test_series").build();
 
         // may keep adding bars and evaluateLogic
-        series = getSeries(klines, interval);
-
+        BarSeries series = getSeries(klines, interval);
 
         // Strategy START
+        // + use pine
 
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(series);
+        // + keep list to add indicator values before return
         EMAIndicator fastEma = new EMAIndicator(closePriceIndicator, emaPeriodShort);
         EMAIndicator slowEma = new EMAIndicator(closePriceIndicator, emaPeriodLong);
 
@@ -114,14 +114,23 @@ public class StrategyService implements InitializingBean {
             }
         }
 
-        indicators.put("fastEma_Line_green", fastEmaValues);
-        indicators.put("slowEma_Line_blue", slowEmaValues);
+        Map<String, Object> fastEma_Line_green = new HashMap<>();
+        fastEma_Line_green.put("name", "fastEma_Line_green");
+        fastEma_Line_green.put("color", "green");
+        fastEma_Line_green.put("values", fastEmaValues);
+        indicators.add(fastEma_Line_green);
+
+        Map<String, Object> slowEma_Line_blue = new HashMap<>();
+        slowEma_Line_blue.put("name", "slowEma_Line_blue");
+        slowEma_Line_blue.put("color", "blue");
+        slowEma_Line_blue.put("values", slowEmaValues);
+        indicators.add(slowEma_Line_blue);
 
         return results;
     }
 
     private void logBar(Bar bar) {
-        logger.info("open {} high {} low {} close {} vol {} trades {}",
+        logger.debug("open {} high {} low {} close {} vol {} trades {}",
             bar.getOpenPrice(),
             bar.getHighPrice(),
             bar.getLowPrice(),
@@ -135,7 +144,7 @@ public class StrategyService implements InitializingBean {
         if(i <= 0) return;
 
         Bar bar = series.getBar(i);
-        logger.info("open {} high {} low {} close {} vol {} trades {}",
+        logger.debug("open {} high {} low {} close {} vol {} trades {}",
             bar.getOpenPrice(),
             bar.getHighPrice(),
             bar.getLowPrice(),

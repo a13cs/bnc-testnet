@@ -87,7 +87,7 @@ public class UiRest {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/jar/test", produces = "application/octet-stream")
-    public byte[] getJarTest() throws IOException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+    public byte[] getJarTest() throws IOException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
         String className = "bnc.testnet.viewer.services.Test";
 
         Class<?> c = Class.forName(className);
@@ -98,7 +98,7 @@ public class UiRest {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/test", produces = "application/octet-stream")
-    public byte[] test() throws ClassNotFoundException, IOException, CompileException, URISyntaxException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public byte[] test() throws ClassNotFoundException, IOException, CompileException, URISyntaxException, InvocationTargetException, InstantiationException, IllegalAccessException {
         ICompiler compiler = new CompilerFactory().newCompiler();
 
         String srcJarName = "demo-be-0.0.1-SNAPSHOT" + "-sources.jar";
@@ -228,8 +228,9 @@ public class UiRest {
                 .replaceAll("[a-z]","");
         int seconds = Integer.parseInt(barSeconds) * 60;
 
+        String p = "";
         // buy/sell markers and indicator plots
-        return strategyService.runTest(klines, String.valueOf(seconds));
+        return strategyService.runTest(klines, String.valueOf(seconds), p);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/order/{side}/{symbol}/{quoteQty}")
