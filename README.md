@@ -25,4 +25,6 @@ Order quantity, symbol and name are set up in application.properties (via 'Add a
 
 
 ###### NOTE
-A hard page refresh is needed after the api-key is changed.
+- A page refresh is needed after the api-key is changed.
+- janino-change.txt
+- Can use bnc-testnet/frontend/node/yarn/dist/bin/yarn to install or add new dev dependencies.

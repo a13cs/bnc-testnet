@@ -164,7 +164,7 @@ public class CompService {
     }
 
 
-    public Map<String, byte[]> getClasses(String scheme, FileSystemProvider provider, URL url) throws IOException, URISyntaxException {
+    public Map<String, byte[]> getClasses(String scheme, FileSystemProvider provider, URL url, String jarPath) throws IOException, URISyntaxException {
         Map<String, byte[]> jarClasses = new HashMap<>();
         if (scheme.equals("jar")) {
             JarFile jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
@@ -183,7 +183,7 @@ public class CompService {
             }
 
             FileSystem fileSystem = provider.newFileSystem(url.toURI(), singletonMap("create", "true"));
-            Stream<Path> list = Files.list(fileSystem.getPath("BOOT-INF/lib/"));
+            Stream<Path> list = Files.list(fileSystem.getPath(jarPath));
             List<Path> paths = (List<Path>) list.collect(Collectors.toList());
 
             for (Path path : paths) {

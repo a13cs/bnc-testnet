@@ -225,7 +225,7 @@ export class AppComponent implements OnInit {
       })
 
       // add test signals
-      this.http.get<Result>(this.prefix + '/testStrategy').subscribe( d => {
+      this.http.get<Result>(this.prefix + '/test').subscribe( d => {
 
         let sig: any[] = d.signals.map(s => {
           return {
@@ -237,11 +237,8 @@ export class AppComponent implements OnInit {
           }
         })
         this.series.setMarkers(sig)
-      })
 
       // add indicators: fastEma, slowEma
-      this.http.get<Result>(this.prefix + '/testStrategy').subscribe( d => {
-
         d.indicators.forEach(i => {
           console.log(i.name)
 
@@ -258,22 +255,9 @@ export class AppComponent implements OnInit {
           })
 
           lineSeries.setData(lineData)
-        });
+        })
 
-//         let sEma: any[] = d['indicators']['fastEma_Line_green'].map(ema => {
-//           return {
-//             time:  +ema[0] /1000 as UTCTimestamp,
-//             value: ema[1] || 0
-//           }
-//         })
-//         this.slowEma.setData(sEma)
       })
-
-
-//       chart.timeScale().setVisibleRange({
-//           from: (new Date(Date.UTC(2018, 0, 1, 0, 0, 0, 0))).getTime() / 1000,
-//           to: (new Date(Date.UTC(2022, 1, 1, 0, 0, 0, 0))).getTime() / 1000,
-//       });
 
   }
 

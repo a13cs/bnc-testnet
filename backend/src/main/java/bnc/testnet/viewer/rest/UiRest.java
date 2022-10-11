@@ -7,6 +7,7 @@ import bnc.testnet.viewer.services.StrategyService;
 import model.OrderResult;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompiler;
+import org.codehaus.commons.compiler.util.ResourceFinderClassLoader;
 import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
 import org.codehaus.commons.compiler.util.resource.MapResourceCreator;
 import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
@@ -97,8 +98,9 @@ public class UiRest {
         return lambdaJarService.getUpdatedJarTest();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/test", produces = "application/octet-stream")
-    public byte[] test() throws ClassNotFoundException, IOException, CompileException, URISyntaxException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    // + move to service
+    @RequestMapping(method = RequestMethod.GET, path = "/test")
+    public Map<String, Object> test() throws ClassNotFoundException, IOException, CompileException, URISyntaxException, InvocationTargetException, InstantiationException, IllegalAccessException, InterruptedException {
         ICompiler compiler = new CompilerFactory().newCompiler();
 
         String srcJarName = "demo-be-0.0.1-SNAPSHOT" + "-sources.jar";
@@ -118,7 +120,7 @@ public class UiRest {
         }
 
         URL url = compService.createUrl(location);
-        Map<String, byte[]> jarClasses = compService.getClasses(scheme, provider, url);
+        Map<String, byte[]> jarClasses = compService.getClasses(scheme, provider, url, "BOOT-INF/lib/");
 
         Map<String, byte[]> classesMap = new HashMap<String, byte[]>();
         Set<String> keys = jarClasses.keySet();
@@ -154,37 +156,116 @@ public class UiRest {
                         "}"
         ));
         sources.add(new StringResource(
-                "pkg2/B.java",
-                "package pkg2; " +
-                        "import bnc.testnet.viewer.services.Test; " +
-
-                        "public class B { " +
-                        "public static void meth() { " +
-                        "new Test().run(); " +
-                        "} " +
-                        "}"
+                "TaStrategyImpl.java",
+"package bnc.testnet.viewer.services.strategy;\n" +
+        "\n" +
+        "import org.ta4j.core.*;\n" +
+        "import org.ta4j.core.indicators.EMAIndicator;\n" +
+        "import org.ta4j.core.indicators.helpers.ClosePriceIndicator;\n" +
+        "import org.ta4j.core.num.DecimalNum;\n" +
+        "import org.ta4j.core.num.Num;\n" +
+        "import org.ta4j.core.rules.CrossedDownIndicatorRule;\n" +
+        "import org.ta4j.core.rules.CrossedUpIndicatorRule;\n" +
+        "\n" +
+        "import java.util.HashMap;\n" +
+        "import java.util.Map;\n" +
+        "\n" +
+        "public class TaStrategyImpl implements TaStrategy {\n" +
+        "\n" +
+        "    private final BarSeries series;\n" +
+        "    private final Strategy strategy;\n" +
+        "\n" +
+        "    private final Map<String, Num> inputs = new HashMap<>();\n" +
+        "    private final Map<String, Indicator<Num>> output = new HashMap<>();\n" +
+        "\n" +
+        "\n" +
+        "    {\n" +
+        "        inputs.putIfAbsent(\"emaPeriodShort\", DecimalNum.valueOf(20));\n" +
+        "        inputs.putIfAbsent(\"emaPeriodLong\", DecimalNum.valueOf(80));\n" +
+        "    }\n" +
+        "\n" +
+        "    public TaStrategyImpl(BarSeries barSeries) {\n" +
+        "        this.series = barSeries;\n" +
+        "\n" +
+        "        ClosePriceIndicator close = new ClosePriceIndicator(series);\n" +
+        "\n" +
+        "        int emaPeriodShort = ((Num) inputs.get(\"emaPeriodShort\")).intValue();\n" +
+        "        int emaPeriodLong = ((Num) inputs.get(\"emaPeriodLong\")).intValue();\n" +
+        "\n" +
+        "        EMAIndicator fastEma = new EMAIndicator(close, emaPeriodShort);\n" +
+        "        EMAIndicator slowEma = new EMAIndicator(close, emaPeriodLong);\n" +
+        "\n" +
+        "        // + keep list to add indicator at the end\n" +
+        "        // plot(fastEma)\n" +
+        "        // plot(slowEma)\n" +
+        "        output.putIfAbsent(\"fastEma\", fastEma);\n" +
+        "        output.putIfAbsent(\"slowEma\", slowEma);\n" +
+        "\n" +
+        "        Rule entryRule = new CrossedUpIndicatorRule(fastEma, slowEma);\n" +
+        "        Rule exitRule = new CrossedDownIndicatorRule(fastEma, slowEma);\n" +
+        "\n" +
+        "        strategy = new BaseStrategy(entryRule, exitRule);\n" +
+        "    }\n" +
+        "\n" +
+        "    public Map<String, Num> getInputs() {\n" +
+        "        return inputs;\n" +
+        "    }\n" +
+        "\n" +
+        "    public Map<String, Indicator<Num>> getOutput() {\n" +
+        "        return output;\n" +
+        "    }\n" +
+        "\n" +
+        "    public Strategy getStrategy() {\n" +
+        "        return strategy;\n" +
+        "    }\n" +
+        "\n" +
+        "    public BarSeries getSeries() {\n" +
+        "        return series;\n" +
+        "    }\n" +
+        "\n" +
+        "    // + implement Strategy\n" +
+        "    public boolean shouldEnter(int i) {\n" +
+        "        return this.strategy.shouldEnter(i);\n" +
+        "    }\n" +
+        "\n" +
+        "/*\n" +
+        "\n" +
+        "    // Strategy START\n" +
+        "\n" +
+        "\n" +
+        "        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(series);\n" +
+        "\n" +
+        "        EMAIndicator fastEma = new EMAIndicator(closePriceIndicator, emaPeriodShort);\n" +
+        "        EMAIndicator slowEma = new EMAIndicator(closePriceIndicator, emaPeriodLong);\n" +
+        "\n" +
+        "\n" +
+        "        CrossedUpIndicatorRule entryRule = new CrossedUpIndicatorRule(fastEma, slowEma);\n" +
+        "        CrossedDownIndicatorRule exitRule = new CrossedDownIndicatorRule(fastEma, slowEma);\n" +
+        "\n" +
+        "        Strategy strategy = new BaseStrategy(entryRule, exitRule);\n" +
+        "\n" +
+        "    // Strategy END\n" +
+        "\n" +
+        "*/\n" +
+        "}\n"
         ));
         compiler.setSourceCharset(Charset.defaultCharset());
         compService.compile(compiler, sources);
 
 
-        ByteArrayClassLoader byteArrayClassLoader = new ByteArrayClassLoader(jarClasses);
-        Class<?> a = byteArrayClassLoader.loadClass("pkg1.A");
-        Object inst = a.getConstructors()[0].newInstance();
-        ((Runnable) inst).run();
-/*
+//        ByteArrayClassLoader byteArrayClassLoader = new ByteArrayClassLoader(jarClasses);
+//        Class<?> strategyImpl = byteArrayClassLoader.loadClass("bnc.testnet.viewer.services.strategy.TaStrategyImpl");
+//        Object inst = c.getConstructors()[0].newInstance();
+//        ((Runnable) inst).run();
+
         ClassLoader cl = new ResourceFinderClassLoader(
-                new MapResourceFinder(localJarResources),    // resourceFinder
+                new MapResourceFinder(jarClasses),    // resourceFinder
                 //  ClassLoader.getSystemClassLoader() // parent
                 this.getClass().getClassLoader() // parent
         );
+        Class<?> s = cl.loadClass("bnc.testnet.viewer.services.strategy.TaStrategyImpl");
 
-        Class<?> a = cl.loadClass("pkg1.A");
-        Method run = a.getDeclaredMethod("run");
-        Object invoke = run.invoke(a.getConstructors()[0].newInstance());
-*/
-
-        return new byte[0];
+        return testStrategy(s);
     }
 
 
@@ -217,20 +298,19 @@ public class UiRest {
         return marketService.getSimple("uiKlines", map);
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/testStrategy")
-    public Map<String,Object> testStrategy() throws IOException, InterruptedException {
+//    @RequestMapping(method = RequestMethod.GET, path = "/testStrategy")
+    public Map<String,Object> testStrategy(Class<?> c) throws IOException, InterruptedException, InvocationTargetException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 
         String interval = "1m";
         String klines = klines("0", "0", interval);
 
         String barSeconds = interval
-                .replaceAll("[A-Z]","")
-                .replaceAll("[a-z]","");
+                .replaceAll("\\p{Alpha}","");
+//                .replaceAll("[a-z]","");
         int seconds = Integer.parseInt(barSeconds) * 60;
 
-        String p = "";
         // buy/sell markers and indicator plots
-        return strategyService.runTest(klines, String.valueOf(seconds), p);
+        return strategyService.runTest(klines, String.valueOf(seconds), c);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/order/{side}/{symbol}/{quoteQty}")

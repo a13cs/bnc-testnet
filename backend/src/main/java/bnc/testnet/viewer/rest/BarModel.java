@@ -26,7 +26,23 @@ public class BarModel {
     private Double volume;
     private Long trades;
 
-//    private String dateName;
+    public BarModel() {
+    }
+
+    public BarModel(ZonedDateTime beginTime, ZonedDateTime endTime, Duration timePeriod, Double openPrice, Double closePrice, Double highPrice, Double lowPrice, Double amount, Double volume, Long trades) {
+        this.beginTime = beginTime;
+        this.endTime = endTime;
+        this.timePeriod = timePeriod;
+        this.openPrice = openPrice;
+        this.closePrice = closePrice;
+        this.highPrice = highPrice;
+        this.lowPrice = lowPrice;
+        this.amount = amount;
+        this.volume = volume;
+        this.trades = trades;
+    }
+
+    //    private String dateName;
 //    private Boolean bearish;
 //    private Boolean bullish;
 
@@ -77,4 +93,83 @@ public class BarModel {
 ]
 */
 
+    public ZonedDateTime getBeginTime() {
+        return beginTime;
+    }
+
+    public void setBeginTime(ZonedDateTime beginTime) {
+        this.beginTime = beginTime;
+    }
+
+    public ZonedDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(ZonedDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    public Duration getTimePeriod() {
+        return timePeriod;
+    }
+
+    public void setTimePeriod(Duration timePeriod) {
+        this.timePeriod = timePeriod;
+    }
+
+    public Double getOpenPrice() {
+        return openPrice;
+    }
+
+    public void setOpenPrice(Double openPrice) {
+        this.openPrice = openPrice;
+    }
+
+    public Double getClosePrice() {
+        return closePrice;
+    }
+
+    public void setClosePrice(Double closePrice) {
+        this.closePrice = closePrice;
+    }
+
+    public Double getHighPrice() {
+        return highPrice;
+    }
+
+    public void setHighPrice(Double highPrice) {
+        this.highPrice = highPrice;
+    }
+
+    public Double getLowPrice() {
+        return lowPrice;
+    }
+
+    public void setLowPrice(Double lowPrice) {
+        this.lowPrice = lowPrice;
+    }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
+
+    public Double getVolume() {
+        return volume;
+    }
+
+    public void setVolume(Double volume) {
+        this.volume = volume;
+    }
+
+    public Long getTrades() {
+        return trades;
+    }
+
+    public void setTrades(Long trades) {
+        this.trades = trades;
+    }
 }
