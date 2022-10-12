@@ -1,7 +1,1 @@
-{
-  "action":"buy",
-  "price":"21379.27",
-  "volume":"0.00083",
-  "time":"2022-09-10T07:44:30Z",
-  "orderId":"Close entry(s) order sell"
-}
+{"action":"BUY_BNC-1"}

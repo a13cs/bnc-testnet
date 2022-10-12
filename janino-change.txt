@@ -1,0 +1,11 @@
+janino\janino\src\main\java\org\codehaus\janino\ClassFileIClass.java#toIAnnotation() L393
+
+private IAnnotation toIAnnotation(final ClassFile.Annotation annotation) {
+
+    @Override public Object
+    visitAnnotation(Annotation subject) {
+        // throw new AssertionError("NYI");
+        return null;
+    }
+
+}

@@ -1,0 +1,33 @@
+<h1 mat-dialog-title>Add api-key</h1>
+<div mat-dialog-content>
+  <div>
+    <button mat-button (click)="addProp()">
+      Add
+    </button>
+  </div>
+  <br>
+
+  <div *ngFor="let prop of data">
+    <mat-form-field>
+      <input matInput [(ngModel)]="prop.key">
+    </mat-form-field>
+    <mat-form-field>
+      <input matInput [(ngModel)]="prop.value">
+    </mat-form-field>
+    <br>
+  </div>
+
+  <div>
+    <button mat-button (click)="deleteProp()">
+      Delete
+    </button>
+  </div>
+
+</div>
+
+
+
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">No Thanks</button>
+  <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
+</div>

@@ -1,31 +1,71 @@
-<div style="padding: 10px">
-  <button (click)="getJar()">
-    Get jar
-  </button>
+<div style="padding: 10px" class="toolbar" role="banner">
+  <dialog-overview-example></dialog-overview-example>
+  <div>
+    <a href="http://{{ jarLocation }}/jar" target="_blank">
+      Get JAR
+    </a>
+  </div>
 </div>
-<!--<div>-->
-<!--  <button>-->
-<!--    Add API KEY-->
-<!--  </button>-->
-<!--</div>-->
 
-<h2> Lightweight-Charts </h2>
-<!--<span> Balance: {{balance | json}} </span>-->
+<!--  add buy/sell -->
 <div>
-    <h3>Acc type {{ acc.accountType }}</h3>
-    <h4 *ngFor="let b of balances">Asset {{ b.asset }} &nbsp; {{ b.free }} </h4>
+  <div>
+    <button (click)="buy(inb.value)" style="color: green">
+      BUY
+    </button>
+    <input type="text" value="0" #inb style="width: 50px">
+  </div>
+  <div>
+    <button (click)="sell(ins.value)" style="color: red">
+      SELL
+    </button>
+    <input type="text" value="0" #ins style="width: 50px">
+  </div>
+
 </div>
-<br>
-<div style="padding: 10px">
-  <button (click)="showTrades = !showTrades">
-    {{showTrades ? 'Hide' : 'Show'}} Trades
-  </button>
-  <div *ngIf="showTrades">
-<!--    table-->
-    <h5 *ngFor="let t of myTrades">
-      Symbol {{ t.symbol }} &nbsp;
-      Time {{ t.time }} &nbsp;
-      QuoteQty {{ t.quoteQty }}
-    </h5>
+
+<div>
+  <h2> Lightweight-Charts </h2>
+  <div>
+    <button (click)="getAcc()" >
+      Acc Info
+    </button>
+  </div>
+  <!--<span> Balance: {{balance | json}} </span>-->
+  <div *ngIf="balances.length">
+      <h4>Acc type:&nbsp;</h4><h3>  {{ accTypeValue }}</h3>
+      <h4>Isolated:&nbsp;</h4><h3>  {{ isAccIsolated }}</h3>
+      <h4 *ngFor="let b of balances">Asset {{ b.asset }} &nbsp; {{ b.free }} </h4>
+  </div>
+  <br>
+  <div style="padding: 10px">
+<!--    todo margin trades    -->
+    <button (click)="showTrades = !showTrades">
+      {{showTrades ? 'Hide' : 'Show'}} Trades
+    </button>
+    <div *ngIf="showTrades">
+  <!--    table-->
+      <h5 *ngFor="let t of myTrades">
+        Symbol {{ t.symbol }} &nbsp;
+        Time {{ t.time }} &nbsp;
+        QuoteQty {{ t.quoteQty }}
+      </h5>
+    </div>
+    <!--    todo margin trades on chart button   -->
+  </div>
+</div>
+
+<div>
+  <div style="float: right">
+    <button (click)="test(t.value)" style="padding: 5px">
+      RUN TEST
+    </button>
+    <br>
+    <button (click)="save(t.value)" style="padding: 5px">
+      SAVE STRATEGY
+    </button>
+  </div>
+  <div>
+    <input type="text" value=" " #t style="overflow: scroll; width: 500px; height: 300px">
   </div>
 </div>
