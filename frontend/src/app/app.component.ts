@@ -38,6 +38,8 @@ export class AppComponent implements OnInit {
   proxyConf = false
   prefix = this.proxyConf ? '/be' : ''
 
+  chart : any = {}
+
   constructor(private http: HttpClient) {
   }
 
@@ -65,6 +67,8 @@ export class AppComponent implements OnInit {
         mode: CrosshairMode.Normal,
       }
     });
+
+    this.chart = chart;
 
     chart.applyOptions({
       watermark: {
@@ -224,41 +228,6 @@ export class AppComponent implements OnInit {
         })
       })
 
-      // add test signals
-      this.http.get<Result>(this.prefix + '/test').subscribe( d => {
-
-        let sig: any[] = d.signals.map(s => {
-          return {
-            time:  +s[0] /1000 as UTCTimestamp,
-            color: s[1] === 'B' ? 'rgb(7,130,19)' : 'rgb(113,10,11)',
-            position: 'belowBar',
-            shape: s[1] === 'B' ? "arrowUp" : "arrowDown",
-            text: (s[1]) || ''
-          }
-        })
-        this.series.setMarkers(sig)
-
-      // add indicators: fastEma, slowEma
-        d.indicators.forEach(i => {
-          console.log(i.name)
-
-          let lineSeries = chart.addLineSeries({
-            color: i.color, // 'rgb(4,107,232)',
-            lineWidth: 2,
-          });
-
-          let lineData: any[] = i.values.map(ema => {
-            return {
-              time:  +ema[0] /1000 as UTCTimestamp,
-              value: ema[1] || 0
-            }
-          })
-
-          lineSeries.setData(lineData)
-        })
-
-      })
-
   }
 
   getAcc() {
@@ -289,6 +258,56 @@ export class AppComponent implements OnInit {
 //  todo get document.body canvas
   refresh() {
 //     this.ngOnInit()
+  }
+
+  test(value?: string) {
+//       let h = new HttpHeaders()
+//       h.set('Content-Type', 'application/json')
+//
+//       let p : any = {script: value, type: 'pine'}
+//       this.http.post('/test/0/0/1m', p, {headers: h}).subscribe( d => {
+//         console.log(d)
+//       })
+
+      // add test signals
+      this.http.get<Result>(this.prefix + '/test/0/0/1m').subscribe( d => {
+
+        let sig: any[] = d.signals.map(s => {
+          return {
+            time:  +s[0] /1000 as UTCTimestamp,
+            color: s[1] === 'B' ? 'rgb(7,130,19)' : 'rgb(113,10,11)',
+            position: 'belowBar',
+            shape: s[1] === 'B' ? "arrowUp" : "arrowDown",
+            text: (s[1]) || ''
+          }
+        })
+        this.series.setMarkers(sig)
+
+      // add indicators: fastEma, slowEma
+        d.indicators.forEach(i => {
+          console.log(i.name)
+
+          let lineSeries = this.chart.addLineSeries({
+            color: i.color, // 'rgb(4,107,232)',
+            lineWidth: 2,
+          });
+
+          let lineData: any[] = i.values.map(ema => {
+            return {
+              time:  +ema[0] /1000 as UTCTimestamp,
+              value: ema[1] || 0
+            }
+          })
+
+          lineSeries.setData(lineData)
+        })
+      })
+
+  }
+
+  save(value?: string) {
+    //  save version
+    console.log(value)
   }
 
 }

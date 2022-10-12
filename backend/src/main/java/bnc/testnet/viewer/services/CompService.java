@@ -2,8 +2,11 @@ package bnc.testnet.viewer.services;
 
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompiler;
+import org.codehaus.commons.compiler.util.resource.MapResourceCreator;
+import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.StringResource;
+import org.codehaus.janino.CompilerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,7 @@ import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -163,7 +167,45 @@ public class CompService {
         return resources;
     }
 
+    public ICompiler getCompiler(List<Resource> sources, Map<String, byte[]> jarClasses) {
+        Map<String, byte[]> classesMap = new HashMap<String, byte[]>();
+        Set<String> keys = jarClasses.keySet();
+        for (String k : keys) {
+            String newKey = k.substring(0, k.lastIndexOf(".")) + ".java";
+            classesMap.put(newKey, jarClasses.get(k));
 
+        }
+
+        int lastUpdatedDiff = 100_000;  // jarClasses to be considered first
+        MapResourceFinder resourceFinder = new MapResourceFinder(classesMap);
+        resourceFinder.setLastModified(System.currentTimeMillis() - lastUpdatedDiff);
+
+        MapResourceFinder classesMapFinder = new MapResourceFinder(jarClasses);
+        classesMapFinder.setLastModified(System.currentTimeMillis());
+
+        MapResourceCreator classFileCreator = new MapResourceCreator(jarClasses);
+
+        ICompiler compiler = new CompilerFactory().newCompiler();
+
+        compiler.setSourceFinder(resourceFinder);
+        compiler.setClassFileFinder(classesMapFinder);
+        compiler.setClassFileCreator(classFileCreator);
+
+        compiler.setSourceCharset(Charset.defaultCharset());
+
+//        sources.add(new StringResource(
+//                "pkg1/A.java",
+//                "package pkg1; " +
+//                        "public class A implements Runnable {\n" +
+//                        "    @Override\n" +
+//                        "    public void run() {\n" +
+//                        // pkg2.B.meth();
+//                        "        System.out.println(\"test run a\");\n" +
+//                        "    }\n" +
+//                        "}"
+//        ));
+        return compiler;
+    }
     public Map<String, byte[]> getClasses(String scheme, FileSystemProvider provider, URL url, String jarPath) throws IOException, URISyntaxException {
         Map<String, byte[]> jarClasses = new HashMap<>();
         if (scheme.equals("jar")) {

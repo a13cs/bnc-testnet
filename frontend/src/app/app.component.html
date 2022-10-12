@@ -55,4 +55,17 @@
   </div>
 </div>
 
-
+<div>
+  <div style="float: right">
+    <button (click)="test(t.value)" style="padding: 5px">
+      RUN TEST
+    </button>
+    <br>
+    <button (click)="save(t.value)" style="padding: 5px">
+      SAVE STRATEGY
+    </button>
+  </div>
+  <div>
+    <input type="text" value=" " #t style="overflow: scroll; width: 500px; height: 300px">
+  </div>
+</div>

@@ -1,4 +1,4 @@
-package bnc.testnet.viewer.rest;
+package com.example.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

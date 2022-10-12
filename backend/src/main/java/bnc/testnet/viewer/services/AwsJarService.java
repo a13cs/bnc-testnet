@@ -72,16 +72,11 @@ public class AwsJarService {
     }
 
     public byte[] getUpdatedJarTest() throws IOException {
-//        URL location = getClass()
-//                .getProtectionDomain()
-//                .getCodeSource()
-//                .getLocation();
-//        InputStream inputStream = new FileInputStream((String)location.getFile());
-
         InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("java-service-0.0.1-SNAPSHOT.jar");
 
         byte[] bytes = null;
         try {
+            // use comp service
             String localPath = "target/classes";
 
             Path path = Paths.get(localPath + "/bnc/testnet/viewer/services/Test.class");

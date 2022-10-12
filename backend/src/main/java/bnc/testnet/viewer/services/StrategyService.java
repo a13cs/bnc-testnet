@@ -1,6 +1,6 @@
 package bnc.testnet.viewer.services;
 
-import bnc.testnet.viewer.rest.BarModel;
+import bnc.testnet.viewer.model.BarModel;
 import bnc.testnet.viewer.services.strategy.TaStrategy;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -30,6 +30,9 @@ public class StrategyService {
 
     private static final ObjectMapper OM;
 
+    private static final String[] color= {"green", "blue", "red","yellow","orange"};
+    private static int currentColor = 0;
+
     static {
         OM = new ObjectMapper();
 
@@ -38,6 +41,7 @@ public class StrategyService {
 
         OM.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         OM.configure(SerializationFeature.INDENT_OUTPUT, true);
+
     }
 
     public Map<String, Object> runTest(String klines, String interval, Class<?> c) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -63,7 +67,7 @@ public class StrategyService {
             Map<String, Object> displayIndicator = new HashMap<>();
             displayIndicator.put("name", indicatorName);
             displayIndicator.put("values", new ArrayList<>());
-//            fastEma_Line_green.put("color", "green");
+            displayIndicator.put("color", color[++currentColor%color.length]);
 
             indicators.add(displayIndicator);
         }
@@ -72,8 +76,6 @@ public class StrategyService {
         final int endIndex = series.getEndIndex();
 
         final int emaPeriodLong = ((Num) inputs.get("emaPeriodLong")).intValue();
-//        int emaPeriodShort = 20;
-//        int emaPeriodLong  = 80;
         Predicate<Object> when = new Predicate<Object>() {
             @Override
             public boolean test(Object o) {

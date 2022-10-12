@@ -8,12 +8,9 @@ import model.OrderResult;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.util.ResourceFinderClassLoader;
-import org.codehaus.commons.compiler.util.reflect.ByteArrayClassLoader;
-import org.codehaus.commons.compiler.util.resource.MapResourceCreator;
 import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.StringResource;
-import org.codehaus.janino.CompilerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +21,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.file.spi.FileSystemProvider;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 @RestController
@@ -88,21 +83,18 @@ public class UiRest {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/jar/test", produces = "application/octet-stream")
-    public byte[] getJarTest() throws IOException, ClassNotFoundException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        String className = "bnc.testnet.viewer.services.Test";
-
-        Class<?> c = Class.forName(className);
-        ((Runnable) c.getConstructors()[0].newInstance()).run();
-//        Class<?> a = cl.loadClass("pkg1.A");
+    public byte[] getJarTest() throws IOException{
+        // adds "bnc.testnet.viewer.services.Test" to java-service;
 
         return lambdaJarService.getUpdatedJarTest();
     }
 
-    // + move to service
-    @RequestMapping(method = RequestMethod.GET, path = "/test")
-    public Map<String, Object> test() throws ClassNotFoundException, IOException, CompileException, URISyntaxException, InvocationTargetException, InstantiationException, IllegalAccessException, InterruptedException {
-        ICompiler compiler = new CompilerFactory().newCompiler();
-
+    @RequestMapping(method = RequestMethod.GET, path = "/test/{start}/{end}/{interval}")
+    public Map<String, Object> test(
+            @PathVariable(value = "start") String start,
+            @PathVariable(value = "end") String end,
+            @PathVariable(value = "interval") String interval
+    ) throws ClassNotFoundException, IOException, CompileException, URISyntaxException, InvocationTargetException, InstantiationException, IllegalAccessException, InterruptedException {
         String srcJarName = "demo-be-0.0.1-SNAPSHOT" + "-sources.jar";
         List<Resource> sources = compService.getLocalJarResourcesAsString(srcJarName);
 
@@ -120,152 +112,126 @@ public class UiRest {
         }
 
         URL url = compService.createUrl(location);
-        Map<String, byte[]> jarClasses = compService.getClasses(scheme, provider, url, "BOOT-INF/lib/");
+        String jarLibPath = "BOOT-INF/lib/";
+        Map<String, byte[]> jarClasses = compService.getClasses(scheme, provider, url, jarLibPath);
 
-        Map<String, byte[]> classesMap = new HashMap<String, byte[]>();
-        Set<String> keys = jarClasses.keySet();
-        for (String k : keys) {
-            String newKey = k.substring(0, k.lastIndexOf(".")) + ".java";
-            classesMap.put(newKey, jarClasses.get(k));
+        ICompiler compiler = compService.getCompiler(sources, jarClasses);
 
-        }
-
-        int lastUpdatedDiff = 100_000;  // jarClasses to be considered first
-        MapResourceFinder resourceFinder = new MapResourceFinder(classesMap);
-        resourceFinder.setLastModified(System.currentTimeMillis() - lastUpdatedDiff);
-
-        MapResourceFinder classesMapFinder = new MapResourceFinder(jarClasses);
-        classesMapFinder.setLastModified(System.currentTimeMillis());
-
-        MapResourceCreator classFileCreator = new MapResourceCreator(jarClasses);
-
-        compiler.setSourceFinder(resourceFinder);
-        compiler.setClassFileFinder(classesMapFinder);
-        compiler.setClassFileCreator(classFileCreator);
-
+        // POST payload -> classText
+        String classText = "package bnc.testnet.viewer.services.strategy;\n" +
+                "\n" +
+                "import org.ta4j.core.*;\n" +
+                "import org.ta4j.core.indicators.EMAIndicator;\n" +
+                "import org.ta4j.core.indicators.helpers.ClosePriceIndicator;\n" +
+                "import org.ta4j.core.num.DecimalNum;\n" +
+                "import org.ta4j.core.num.Num;\n" +
+                "import org.ta4j.core.rules.CrossedDownIndicatorRule;\n" +
+                "import org.ta4j.core.rules.CrossedUpIndicatorRule;\n" +
+                "\n" +
+                "import java.util.HashMap;\n" +
+                "import java.util.Map;\n" +
+                "\n" +
+                "public class TaStrategyImpl implements TaStrategy {\n" +
+                "\n" +
+                "    private final BarSeries series;\n" +
+                "    private final Strategy strategy;\n" +
+                "\n" +
+                "    private final Map<String, Num> inputs = new HashMap<>();\n" +
+                "    private final Map<String, Indicator<Num>> output = new HashMap<>();\n" +
+                "\n" +
+                "\n" +
+                "    {\n" +
+                "        inputs.putIfAbsent(\"emaPeriodShort\", DecimalNum.valueOf(30));\n" +
+                "        inputs.putIfAbsent(\"emaPeriodLong\", DecimalNum.valueOf(80));\n" +
+                "    }\n" +
+                "\n" +
+                "    public TaStrategyImpl(BarSeries barSeries) {\n" +
+                "        this.series = barSeries;\n" +
+                "\n" +
+                "        ClosePriceIndicator close = new ClosePriceIndicator(series);\n" +
+                "\n" +
+                "        int emaPeriodShort = ((Num) inputs.get(\"emaPeriodShort\")).intValue();\n" +
+                "        int emaPeriodLong = ((Num) inputs.get(\"emaPeriodLong\")).intValue();\n" +
+                "\n" +
+                "        EMAIndicator fastEma = new EMAIndicator(close, emaPeriodShort);\n" +
+                "        EMAIndicator slowEma = new EMAIndicator(close, emaPeriodLong);\n" +
+                "\n" +
+                "        // + keep list to add indicator at the end\n" +
+                "        // plot(fastEma)\n" +
+                "        // plot(slowEma)\n" +
+                "        output.putIfAbsent(\"fastEma\", fastEma);\n" +
+                "        output.putIfAbsent(\"slowEma\", slowEma);\n" +
+                "\n" +
+                "        Rule entryRule = new CrossedUpIndicatorRule(fastEma, slowEma);\n" +
+                "        Rule exitRule = new CrossedDownIndicatorRule(fastEma, slowEma);\n" +
+                "\n" +
+                "        strategy = new BaseStrategy(entryRule, exitRule);\n" +
+                "    }\n" +
+                "\n" +
+                "    public Map<String, Num> getInputs() {\n" +
+                "        return inputs;\n" +
+                "    }\n" +
+                "\n" +
+                "    public Map<String, Indicator<Num>> getOutput() {\n" +
+                "        return output;\n" +
+                "    }\n" +
+                "\n" +
+                "    public Strategy getStrategy() {\n" +
+                "        return strategy;\n" +
+                "    }\n" +
+                "\n" +
+                "    public BarSeries getSeries() {\n" +
+                "        return series;\n" +
+                "    }\n" +
+                "\n" +
+                "    // + implement Strategy\n" +
+                "    public boolean shouldEnter(int i) {\n" +
+                "        return this.strategy.shouldEnter(i);\n" +
+                "    }\n" +
+                "\n" +
+                "/*\n" +
+                "\n" +
+                "    // Strategy START\n" +
+                "\n" +
+                "\n" +
+                "        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(series);\n" +
+                "\n" +
+                "        EMAIndicator fastEma = new EMAIndicator(closePriceIndicator, emaPeriodShort);\n" +
+                "        EMAIndicator slowEma = new EMAIndicator(closePriceIndicator, emaPeriodLong);\n" +
+                "\n" +
+                "\n" +
+                "        CrossedUpIndicatorRule entryRule = new CrossedUpIndicatorRule(fastEma, slowEma);\n" +
+                "        CrossedDownIndicatorRule exitRule = new CrossedDownIndicatorRule(fastEma, slowEma);\n" +
+                "\n" +
+                "        Strategy strategy = new BaseStrategy(entryRule, exitRule);\n" +
+                "\n" +
+                "    // Strategy END\n" +
+                "\n" +
+                "*/\n" +
+                "}\n";
 
         sources.add(new StringResource(
-                "pkg1/A.java",
-                "package pkg1; " +
-                        "public class A implements Runnable {\n" +
-                        "    @Override\n" +
-                        "    public void run() {\n" +
-                        // pkg2.B.meth();
-                        "        System.out.println(\"test run a\");\n" +
-                        "    }\n" +
-                        "}"
+                "bnc/testnet/viewer/services/strategy/TaStrategyImpl.java",
+                classText
         ));
-        sources.add(new StringResource(
-                "TaStrategyImpl.java",
-"package bnc.testnet.viewer.services.strategy;\n" +
-        "\n" +
-        "import org.ta4j.core.*;\n" +
-        "import org.ta4j.core.indicators.EMAIndicator;\n" +
-        "import org.ta4j.core.indicators.helpers.ClosePriceIndicator;\n" +
-        "import org.ta4j.core.num.DecimalNum;\n" +
-        "import org.ta4j.core.num.Num;\n" +
-        "import org.ta4j.core.rules.CrossedDownIndicatorRule;\n" +
-        "import org.ta4j.core.rules.CrossedUpIndicatorRule;\n" +
-        "\n" +
-        "import java.util.HashMap;\n" +
-        "import java.util.Map;\n" +
-        "\n" +
-        "public class TaStrategyImpl implements TaStrategy {\n" +
-        "\n" +
-        "    private final BarSeries series;\n" +
-        "    private final Strategy strategy;\n" +
-        "\n" +
-        "    private final Map<String, Num> inputs = new HashMap<>();\n" +
-        "    private final Map<String, Indicator<Num>> output = new HashMap<>();\n" +
-        "\n" +
-        "\n" +
-        "    {\n" +
-        "        inputs.putIfAbsent(\"emaPeriodShort\", DecimalNum.valueOf(20));\n" +
-        "        inputs.putIfAbsent(\"emaPeriodLong\", DecimalNum.valueOf(80));\n" +
-        "    }\n" +
-        "\n" +
-        "    public TaStrategyImpl(BarSeries barSeries) {\n" +
-        "        this.series = barSeries;\n" +
-        "\n" +
-        "        ClosePriceIndicator close = new ClosePriceIndicator(series);\n" +
-        "\n" +
-        "        int emaPeriodShort = ((Num) inputs.get(\"emaPeriodShort\")).intValue();\n" +
-        "        int emaPeriodLong = ((Num) inputs.get(\"emaPeriodLong\")).intValue();\n" +
-        "\n" +
-        "        EMAIndicator fastEma = new EMAIndicator(close, emaPeriodShort);\n" +
-        "        EMAIndicator slowEma = new EMAIndicator(close, emaPeriodLong);\n" +
-        "\n" +
-        "        // + keep list to add indicator at the end\n" +
-        "        // plot(fastEma)\n" +
-        "        // plot(slowEma)\n" +
-        "        output.putIfAbsent(\"fastEma\", fastEma);\n" +
-        "        output.putIfAbsent(\"slowEma\", slowEma);\n" +
-        "\n" +
-        "        Rule entryRule = new CrossedUpIndicatorRule(fastEma, slowEma);\n" +
-        "        Rule exitRule = new CrossedDownIndicatorRule(fastEma, slowEma);\n" +
-        "\n" +
-        "        strategy = new BaseStrategy(entryRule, exitRule);\n" +
-        "    }\n" +
-        "\n" +
-        "    public Map<String, Num> getInputs() {\n" +
-        "        return inputs;\n" +
-        "    }\n" +
-        "\n" +
-        "    public Map<String, Indicator<Num>> getOutput() {\n" +
-        "        return output;\n" +
-        "    }\n" +
-        "\n" +
-        "    public Strategy getStrategy() {\n" +
-        "        return strategy;\n" +
-        "    }\n" +
-        "\n" +
-        "    public BarSeries getSeries() {\n" +
-        "        return series;\n" +
-        "    }\n" +
-        "\n" +
-        "    // + implement Strategy\n" +
-        "    public boolean shouldEnter(int i) {\n" +
-        "        return this.strategy.shouldEnter(i);\n" +
-        "    }\n" +
-        "\n" +
-        "/*\n" +
-        "\n" +
-        "    // Strategy START\n" +
-        "\n" +
-        "\n" +
-        "        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(series);\n" +
-        "\n" +
-        "        EMAIndicator fastEma = new EMAIndicator(closePriceIndicator, emaPeriodShort);\n" +
-        "        EMAIndicator slowEma = new EMAIndicator(closePriceIndicator, emaPeriodLong);\n" +
-        "\n" +
-        "\n" +
-        "        CrossedUpIndicatorRule entryRule = new CrossedUpIndicatorRule(fastEma, slowEma);\n" +
-        "        CrossedDownIndicatorRule exitRule = new CrossedDownIndicatorRule(fastEma, slowEma);\n" +
-        "\n" +
-        "        Strategy strategy = new BaseStrategy(entryRule, exitRule);\n" +
-        "\n" +
-        "    // Strategy END\n" +
-        "\n" +
-        "*/\n" +
-        "}\n"
-        ));
-        compiler.setSourceCharset(Charset.defaultCharset());
         compService.compile(compiler, sources);
 
 
 //        ByteArrayClassLoader byteArrayClassLoader = new ByteArrayClassLoader(jarClasses);
-//        Class<?> strategyImpl = byteArrayClassLoader.loadClass("bnc.testnet.viewer.services.strategy.TaStrategyImpl");
-//        Object inst = c.getConstructors()[0].newInstance();
-//        ((Runnable) inst).run();
-
         ClassLoader cl = new ResourceFinderClassLoader(
                 new MapResourceFinder(jarClasses),    // resourceFinder
                 //  ClassLoader.getSystemClassLoader() // parent
                 this.getClass().getClassLoader() // parent
         );
-        Class<?> s = cl.loadClass("bnc.testnet.viewer.services.strategy.TaStrategyImpl");
+        Class<?> strategy = cl.loadClass("bnc.testnet.viewer.services.strategy.TaStrategyImpl");
 
-        return testStrategy(s);
+        String kLines = klines(start, end, interval);
+        String barSeconds = interval
+                .replaceAll("\\p{Alpha}", ""); // .replaceAll("[a-z]","");
+        int seconds = Integer.parseInt(barSeconds) * 60;
+
+        // buy/sell markers and indicator plots
+        return strategyService.runTest(kLines, String.valueOf(seconds), strategy);
     }
 
 
@@ -274,7 +240,6 @@ public class UiRest {
         http://localhost:8080/klines/1664582400000/1672531200000/15m
         1s,1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
      */
-
     @RequestMapping(method = RequestMethod.GET, path = "/klines/{start}/{end}/{interval}")
     public String klines(@PathVariable(value = "start") String start,
                          @PathVariable(value = "end") String end,
@@ -296,21 +261,6 @@ public class UiRest {
         map.put("interval", /*interval*/ interval);
 
         return marketService.getSimple("uiKlines", map);
-    }
-
-//    @RequestMapping(method = RequestMethod.GET, path = "/testStrategy")
-    public Map<String,Object> testStrategy(Class<?> c) throws IOException, InterruptedException, InvocationTargetException, InstantiationException, IllegalAccessException, ClassNotFoundException {
-
-        String interval = "1m";
-        String klines = klines("0", "0", interval);
-
-        String barSeconds = interval
-                .replaceAll("\\p{Alpha}","");
-//                .replaceAll("[a-z]","");
-        int seconds = Integer.parseInt(barSeconds) * 60;
-
-        // buy/sell markers and indicator plots
-        return strategyService.runTest(klines, String.valueOf(seconds), c);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/order/{side}/{symbol}/{quoteQty}")
