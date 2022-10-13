@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {createChart, CrosshairMode, ISeriesApi, UTCTimestamp} from 'lightweight-charts';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 
 @Component({
   selector: 'app-root',
@@ -40,6 +40,8 @@ export class AppComponent implements OnInit {
 
   chart : any = {}
 
+  example : string = ""
+
   constructor(private http: HttpClient) {
   }
 
@@ -54,6 +56,25 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
+  // todo: preserve indent
+    this.example =
+`
+      //@version=5
+      strategy("EMA Strategy", overlay=true)
+      fastLength = input(30)
+      slowLength = input(80)
+
+      slowEma = ta.ema(close, slowLength)
+      fastEma = ta.ema(close, fastLength)
+
+      if (ta.crossover(fastEma, slowEma))
+        strategy.entry("EmaLE", strategy.long, comment="EmaLE")
+      if (ta.crossunder(fastEma, slowEma))
+        strategy.entry("EmaSE", strategy.short, comment="EmaSE")
+
+      plot(slowEma, title="slow", color=color.blue, linewidth=1, style=plot.style_line)
+      plot(fastEma, title="fast", color=color.red, linewidth=2, style=plot.style_line)
+`
 
     const chart = createChart(document.body, {
       width: 900,
@@ -261,16 +282,16 @@ export class AppComponent implements OnInit {
   }
 
   test(value?: string) {
-//       let h = new HttpHeaders()
-//       h.set('Content-Type', 'application/json')
-//
-//       let p : any = {script: value, type: 'pine'}
-//       this.http.post('/test/0/0/1m', p, {headers: h}).subscribe( d => {
+      // add test signals
+      let h = new HttpHeaders()
+      h.set('Content-Type', 'application/json')
+
+      let p : any = {script: value, type: 'pine'} // jython
+      this.http.post<Result>('/test/0/0/1m', p, {headers: h}).subscribe( d => {
 //         console.log(d)
 //       })
-
-      // add test signals
-      this.http.get<Result>(this.prefix + '/test/0/0/1m').subscribe( d => {
+//
+//       this.http.get<Result>(this.prefix + '/test/0/0/1m').subscribe( d => {
 
         let sig: any[] = d.signals.map(s => {
           return {

@@ -128,7 +128,6 @@
                                     <directory>${project.build.directory}</directory>
                                     <includes>
                                         <include>${project.artifactId}-${project.version}.${project.packaging}</include>
-<!--                                        <include>${project.artifactId}-${project.version}-sources.${project.packaging}</include>-->
                                     </includes>
                                     <filtering>false</filtering>
                                 </resource>

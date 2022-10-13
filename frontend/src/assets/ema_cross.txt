@@ -1,0 +1,15 @@
+//@version=5
+strategy("EMA Strategy", overlay=true)
+fastLength = input(30)
+slowLength = input(80)
+
+slowEma = ta.ema(close, slowLength)
+fastEma = ta.ema(close, fastLength)
+
+if (ta.crossover(fastEma, slowEma))
+	strategy.entry("EmaLE", strategy.long, comment="EmaLE")
+if (ta.crossunder(fastEma, slowEma))
+	strategy.entry("EmaSE", strategy.short, comment="EmaSE")
+
+plot(slowEma, title="slow", color=color.blue, linewidth=2, style=plot.style_line)
+plot(fastEma, title="fast", color=color.red, linewidth=2, style=plot.style_line)
