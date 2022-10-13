@@ -1,0 +1,16 @@
+//@version=5
+strategy("MACD Strategy")
+fastLength = input(12)
+slowlength = input(26)
+MACDLength = input(9)
+MACD = ta.ema(close, fastLength) - ta.ema(close, slowlength)
+aMACD = ta.ema(MACD, MACDLength)
+delta = MACD - aMACD
+if (ta.crossover(delta, 0))
+	strategy.entry("MacdLE", strategy.long, comment="MacdLE")
+if (ta.crossunder(delta, 0))
+	strategy.entry("MacdSE", strategy.short, comment="MacdSE")
+
+// plot(MACD, title="MACD", color=color.blue, linewidth=3, style=plot.style_histogram)
+// plot(aMACD, title="aMACD", color=color.red, linewidth=2, style=plot.style_line)
+plot(delta, title="delta", color=color.yellow, linewidth=2, style=plot.style_line)

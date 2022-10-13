@@ -97,6 +97,8 @@
 			<version>3.1.8</version>
 		</dependency>
 
+<!--	todo: use jdk if available		-->
+
 		<dependency>
 			<groupId>org.codehaus.janino</groupId>
 			<artifactId>janino</artifactId>

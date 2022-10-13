@@ -1,5 +1,6 @@
 package bnc.testnet.viewer.rest;
 
+import bnc.testnet.viewer.parse.DslService;
 import bnc.testnet.viewer.services.AwsJarService;
 import bnc.testnet.viewer.services.CompService;
 import bnc.testnet.viewer.services.MarketService;
@@ -43,6 +44,9 @@ public class UiRest {
 
     @Autowired
     StrategyService strategyService;
+
+    @Autowired
+    DslService dslService;
 
 
     private static final Logger logger = LoggerFactory.getLogger(UiRest.class);
@@ -89,35 +93,21 @@ public class UiRest {
         return lambdaJarService.getUpdatedJarTest();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/test/{start}/{end}/{interval}")
+    @RequestMapping(method = RequestMethod.POST, path = "/test/{start}/{end}/{interval}")
     public Map<String, Object> test(
             @PathVariable(value = "start") String start,
             @PathVariable(value = "end") String end,
-            @PathVariable(value = "interval") String interval
+            @PathVariable(value = "interval") String interval,
+            @RequestBody String test
     ) throws ClassNotFoundException, IOException, CompileException, URISyntaxException, InvocationTargetException, InstantiationException, IllegalAccessException, InterruptedException {
+
         String srcJarName = "demo-be-0.0.1-SNAPSHOT" + "-sources.jar";
         List<Resource> sources = compService.getLocalJarResourcesAsString(srcJarName);
 
-        URL location = getClass()
-                .getProtectionDomain()
-                .getCodeSource()
-                .getLocation();
-        String scheme = location.toURI().getScheme();
-
-        FileSystemProvider provider = (FileSystemProvider) FileSystemProvider.installedProviders().get(0);
-        for (FileSystemProvider p : FileSystemProvider.installedProviders()) {
-            if (p.getScheme().equals(scheme)) {
-                provider = p;
-            }
-        }
-
-        URL url = compService.createUrl(location);
-        String jarLibPath = "BOOT-INF/lib/";
-        Map<String, byte[]> jarClasses = compService.getClasses(scheme, provider, url, jarLibPath);
-
-        ICompiler compiler = compService.getCompiler(sources, jarClasses);
-
+        String cls = dslService.parse(test);
+//        logger.info("test: {}", cls);
         // POST payload -> classText
+
         String classText = "package bnc.testnet.viewer.services.strategy;\n" +
                 "\n" +
                 "import org.ta4j.core.*;\n" +
@@ -214,8 +204,27 @@ public class UiRest {
                 "bnc/testnet/viewer/services/strategy/TaStrategyImpl.java",
                 classText
         ));
-        compService.compile(compiler, sources);
 
+        URL location = getClass()
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation();
+        String scheme = location.toURI().getScheme();
+
+        FileSystemProvider provider = (FileSystemProvider) FileSystemProvider.installedProviders().get(0);
+        for (FileSystemProvider p : FileSystemProvider.installedProviders()) {
+            if (p.getScheme().equals(scheme)) {
+                provider = p;
+            }
+        }
+
+        URL url = compService.createUrl(location);
+        String jarLibPath = "BOOT-INF/lib/";
+        Map<String, byte[]> jarClasses = compService.getClasses(scheme, provider, url, jarLibPath);
+
+        ICompiler compiler = compService.getCompiler(sources, jarClasses);
+
+        compService.compile(compiler, sources);
 
 //        ByteArrayClassLoader byteArrayClassLoader = new ByteArrayClassLoader(jarClasses);
         ClassLoader cl = new ResourceFinderClassLoader(
