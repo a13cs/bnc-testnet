@@ -24,5 +24,6 @@ Order quantity, symbol and name are set up in application.properties (via 'Add a
 ###### NOTE
 - A page refresh is needed after the api-key is changed.
 
-- Clone and build https://github.com/janino-compiler/janino and see janino-change.txt. Maven uses local repo.  
+- Clone and build https://github.com/janino-compiler/janino and see janino-change.txt. Maven uses local repo.
+- `clean install -Dmaven.javadoc.skip`
 - Can use bnc-testnet/frontend/node/yarn/dist/bin/yarn to install or add new dev dependencies.
