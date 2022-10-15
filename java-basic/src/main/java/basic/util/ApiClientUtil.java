@@ -1,11 +1,11 @@
-package util;
+package basic.util;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import model.OrderResult;
+import basic.model.OrderResult;
 import org.apache.commons.codec.binary.Hex;
 
 import javax.crypto.Mac;

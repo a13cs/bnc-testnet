@@ -6,6 +6,7 @@ import org.codehaus.commons.compiler.util.resource.MapResourceCreator;
 import org.codehaus.commons.compiler.util.resource.MapResourceFinder;
 import org.codehaus.commons.compiler.util.resource.Resource;
 import org.codehaus.commons.compiler.util.resource.StringResource;
+import org.codehaus.janino.Compiler;
 import org.codehaus.janino.CompilerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,7 +186,8 @@ public class CompService {
 
         MapResourceCreator classFileCreator = new MapResourceCreator(jarClasses);
 
-        ICompiler compiler = new CompilerFactory().newCompiler();
+//        ICompiler compiler = new CompilerFactory().newCompiler();
+        ICompiler compiler = new Compiler();
 
         compiler.setSourceFinder(resourceFinder);
         compiler.setClassFileFinder(classesMapFinder);

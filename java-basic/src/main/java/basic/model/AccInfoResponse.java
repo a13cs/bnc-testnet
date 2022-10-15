@@ -1,4 +1,4 @@
-package model;
+package basic.model;
 
 //import lombok.Data;
 

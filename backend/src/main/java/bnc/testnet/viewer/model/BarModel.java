@@ -1,17 +1,17 @@
 package bnc.testnet.viewer.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
-import lombok.Data;
-import lombok.ToString;
+//import lombok.Builder;
+//import lombok.Data;
+//import lombok.ToString;
 import org.ta4j.core.Bar;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
-@Data
-@Builder
-@ToString
+//@Data
+//@Builder
+//@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BarModel {
 

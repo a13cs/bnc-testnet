@@ -1,4 +1,4 @@
-package model;
+package basic.model;
 
 public class OrderResult {
 /*    {

@@ -1,19 +1,11 @@
-package example;
+package basic.example;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 //import com.google.gson.Gson;
 //import com.google.gson.GsonBuilder;
-import model.OrderResult;
-import util.OrderService;
+import basic.util.OrderService;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Hello implements RequestHandler<Object, Object>{
