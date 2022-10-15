@@ -245,7 +245,7 @@ export class AppComponent implements OnInit {
             }
           })
           // + use separate chart
-//           this.series.setMarkers(signals)
+          this.series.setMarkers(signals)
         })
       })
 
