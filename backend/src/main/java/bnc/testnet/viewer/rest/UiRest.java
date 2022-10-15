@@ -1,11 +1,11 @@
 package bnc.testnet.viewer.rest;
 
+import basic.model.OrderResult;
 import bnc.testnet.viewer.parse.DslService;
 import bnc.testnet.viewer.services.AwsJarService;
 import bnc.testnet.viewer.services.CompService;
 import bnc.testnet.viewer.services.MarketService;
 import bnc.testnet.viewer.services.StrategyService;
-import basic.model.OrderResult;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.util.ResourceFinderClassLoader;
@@ -79,11 +79,16 @@ public class UiRest {
     }
 
 
-    @RequestMapping(method = RequestMethod.GET, path = "/jar", produces = "application/octet-stream")
-    public byte[] getJar() throws IOException {
+    @RequestMapping(method = RequestMethod.GET, path = "/jar/{name}", produces = "application/octet-stream")
+    public byte[] getJar(@PathVariable(value = "name") String name) throws IOException {
         Map<String, Object> props = marketService.getProps();
 
-        return lambdaJarService.getUpdatedJar(props);
+        byte[] updatedJar = lambdaJarService.getUpdatedJar(props);
+
+        //  + add separate button and endpoint
+        lambdaJarService.copyJar(name, updatedJar);
+
+        return updatedJar;
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/jar/test", produces = "application/octet-stream")

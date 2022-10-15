@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -115,5 +116,23 @@ public class AwsJarService {
         out.close();
 
         return o.toByteArray();
+    }
+
+
+    public void copyJar(String name, byte[] updatedJar) throws IOException {
+        Path path = Paths.get("./" + name);
+        if (path.toFile().exists()) {
+            boolean delete = Files.deleteIfExists(path);
+            logger.info("deleted {}", path.toAbsolutePath());
+        }
+
+        ByteArrayInputStream in = new ByteArrayInputStream(updatedJar);
+        try {
+            Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+        } catch (Exception ignored) {
+
+        } finally {
+            in.close();
+        }
     }
 }
