@@ -10,6 +10,7 @@ import { HttpClientModule } from "@angular/common/http";
 import {MatDatepickerModule} from '@angular/material/datepicker';
 
 import { DialogOverviewExample, DialogOverviewExampleDialog } from './dialog/dialog.example.overview';
+import { CanvasTest } from './canvas/canvasTest';
 
 
 import { AppComponent } from './app.component';
@@ -18,7 +19,8 @@ import { AppComponent } from './app.component';
   declarations: [
     AppComponent,
     DialogOverviewExample,
-    DialogOverviewExampleDialog
+    DialogOverviewExampleDialog,
+    CanvasTest
   ],
   imports: [
     BrowserModule,

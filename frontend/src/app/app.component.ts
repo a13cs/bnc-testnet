@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild, ElementRef, AfterViewInit} from '@angular/core';
 import {createChart, CrosshairMode, ISeriesApi, UTCTimestamp} from 'lightweight-charts';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 
@@ -7,7 +7,17 @@ import {HttpClient, HttpHeaders} from "@angular/common/http";
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
+//   @ViewChild('myCanvas', {static: false}) myCanvas: ElementRef = {} as ElementRef;
+//   public context: CanvasRenderingContext2D = {} as CanvasRenderingContext2D;
+
+  ngAfterViewInit(): void {
+//     this.context = this.myCanvas.nativeElement.getContext('2d');
+//     console.log(this.context)
+//     console.log(this.myCanvas)
+//
+//     console.log(document.body)
+  }
 
   title = 'app';
 
@@ -76,7 +86,7 @@ export class AppComponent implements OnInit {
       plot(fastEma, title="fast", color=color.red, linewidth=2, style=plot.style_line)
 `
 
-    const chart = createChart(document.body, {
+    const chart = createChart(document.body  /* this.context.canvas */, {
       width: 900,
       height: 500,
       timeScale: {
@@ -88,6 +98,7 @@ export class AppComponent implements OnInit {
         mode: CrosshairMode.Normal,
       }
     });
+    console.log(chart)
 
     this.chart = chart;
 
@@ -276,8 +287,22 @@ export class AppComponent implements OnInit {
     } else this.balances = []
   }
 
-//  todo get document.body canvas
   refresh() {
+//   let a : HTMLElement = document.getElementsByClassName('a')[0] as HTMLElement
+//       const chart = createChart(  a, {
+//         width: 900,
+//         height: 500,
+//         timeScale: {
+//           // barSpacing: 4,
+//           timeVisible: true,
+//           secondsVisible: true,
+//         },
+//         crosshair: {
+//           mode: CrosshairMode.Normal,
+//         }
+//       });
+//     document.getElementsByClassName('a')[0] = document.getElementsByClassName('tv-lightweight-charts')[0].innerHTML
+    console.log(document.getElementsByClassName('tv-lightweight-charts'))
 //     this.ngOnInit()
   }
 
@@ -287,7 +312,7 @@ export class AppComponent implements OnInit {
       h.set('Content-Type', 'application/json')
 
       let p : any = {script: value, type: 'pine'} // jython
-      this.http.post<Result>('/test/0/0/1m', p, {headers: h}).subscribe( d => {
+      this.http.post<Result>(this.prefix + '/test/0/0/1m', p, {headers: h}).subscribe( d => {
 //         console.log(d)
 //       })
 //
