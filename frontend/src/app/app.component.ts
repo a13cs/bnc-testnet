@@ -98,7 +98,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         mode: CrosshairMode.Normal,
       }
     });
-    console.log(chart)
+//     console.log(chart)
 
     this.chart = chart;
 
@@ -301,8 +301,9 @@ export class AppComponent implements OnInit, AfterViewInit {
 //           mode: CrosshairMode.Normal,
 //         }
 //       });
-//     document.getElementsByClassName('a')[0] = document.getElementsByClassName('tv-lightweight-charts')[0].innerHTML
-    console.log(document.getElementsByClassName('tv-lightweight-charts'))
+//     document.getElementsByClassName('a')[0].innerHTML = document.getElementsByClassName('tv-lightweight-charts')[0].innerHTML
+//     console.log(document.getElementsByClassName('tv-lightweight-charts'))
+
 //     this.ngOnInit()
   }
 
