@@ -1,9 +1,10 @@
-<h1 mat-dialog-title>Add api-key</h1>
+<h1 mat-dialog-title>App Properties</h1>
 <div mat-dialog-content>
   <div>
-    <button mat-button (click)="addProp()">
-      Add
-    </button>
+      <button mat-icon-button>
+        <mat-icon fontIcon="add" class="header-icon" (click)="addProp()"></mat-icon>
+      </button>
+      Add New
   </div>
   <br>
 
@@ -18,9 +19,10 @@
   </div>
 
   <div>
-    <button mat-button (click)="deleteProp()">
-      Delete
+    <button mat-icon-button>
+      <mat-icon fontIcon="delete" class="header-icon" (click)="deleteProp()"></mat-icon>
     </button>
+    Delete
   </div>
 
 </div>

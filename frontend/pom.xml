@@ -28,8 +28,8 @@
         <version>1.6</version>
         <configuration>
 <!--          <nodeVersion>v8.9.0</nodeVersion>-->
-          <nodeVersion>v14.17.0</nodeVersion>
-          <yarnVersion>v1.22.10</yarnVersion>
+          <nodeVersion>v19.0.0</nodeVersion>
+          <yarnVersion>v1.22.19</yarnVersion>
 <!--          <yarnVersion>v1.3.2</yarnVersion>-->
 <!--          <npmVersion>v7.14.0</npmVersion>-->
         </configuration>

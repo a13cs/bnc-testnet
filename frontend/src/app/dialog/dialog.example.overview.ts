@@ -20,6 +20,9 @@ export interface PropsPair {
 @Component({
   selector: 'dialog-overview-example',
   templateUrl: 'dialog-overview-example.html',
+  styles: [`
+
+  `]
 })
 export class DialogOverviewExample {
 

@@ -25,7 +25,7 @@ public class Application implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        runFrame("", true);
+//        runFrame("", true);
     }
 
     public static void runFrame(String x, boolean exit) {
