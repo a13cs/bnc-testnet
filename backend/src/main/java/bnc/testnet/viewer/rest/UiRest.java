@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -51,7 +52,15 @@ public class UiRest {
 
     private static final Logger logger = LoggerFactory.getLogger(UiRest.class);
 
+    @RequestMapping(method = RequestMethod.GET, path = "/sub/kLines/{interval}")
+    public Flux<String> subscribeKlines(@PathVariable(value = "interval") String interval) {
+        return marketService.subscribeKlines(interval);
+    }
 
+    @RequestMapping(method = RequestMethod.GET, path = "/close/kLines")
+    public String unsubscribeKlines() throws IOException {
+        return marketService.unsubscribeTrades();
+    }
     @RequestMapping(method = RequestMethod.GET, path = "/acc")
     public String accInfo() throws IOException, InterruptedException {
         return marketService.getInfo("account", new HashMap<>());

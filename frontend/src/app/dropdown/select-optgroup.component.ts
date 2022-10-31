@@ -74,5 +74,6 @@ export class SelectOptgroupComponent {
 
   onSelect() {
     console.log(this.selected)
+    // + set interval BE
   }
 }

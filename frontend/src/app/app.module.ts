@@ -23,6 +23,9 @@ import { SelectOptgroupComponent } from './dropdown/select-optgroup.component';
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {MatSelectModule} from "@angular/material/select";
 import { InfoComponent } from './info/info.component';
+import { SimpleComponent } from './tabs/simple/simple.component';
+import { FullComponent } from './tabs/full/full.component';
+import { CollectComponent } from './tabs/collect/collect.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +36,10 @@ import { InfoComponent } from './info/info.component';
     DatePicker,
     CheckboxComponent,
     SelectOptgroupComponent,
-    InfoComponent
+    InfoComponent,
+    SimpleComponent,
+    FullComponent,
+    CollectComponent
   ],
   imports: [
     BrowserModule,
@@ -52,7 +58,7 @@ import { InfoComponent } from './info/info.component';
       {path: 'simple', component: CanvasChartComponent},
       {path: 'full', component: CanvasChartComponent},
       {path: '', redirectTo: 'welcome', pathMatch: 'full'},
-      {path: '**', redirectTo: 'welcome', pathMatch: 'full'}
+      // {path: '**', component: PageNotFoundComponent}
     ]),
     MatIconModule,
     MatCheckboxModule,

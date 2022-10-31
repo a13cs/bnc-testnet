@@ -129,7 +129,24 @@
 			<version>19</version>
 		</dependency>
 
-		<!--		compile dependencies		-->
+        <dependency>
+            <groupId>com.example</groupId>
+            <artifactId>java-service</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-webflux</artifactId>-->
+<!--		</dependency>-->
+
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-integration</artifactId>-->
+<!--		</dependency>-->
+
+        <!--		compile dependencies		-->
 
 <!--		<dependency>-->
 <!--			<groupId>org.aspectj</groupId>-->
@@ -171,11 +188,11 @@
 <!--			<version>2.11.2</version>-->
 <!--		</dependency>-->
 
-<!--		<dependency>-->
-<!--			<groupId>io.projectreactor</groupId>-->
-<!--			<artifactId>reactor-core</artifactId>-->
-<!--			<version>3.4.23</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-core</artifactId>
+			<version>3.4.23</version>
+		</dependency>
 
 <!--		<dependency>-->
 <!--			<groupId>io.micrometer</groupId>-->

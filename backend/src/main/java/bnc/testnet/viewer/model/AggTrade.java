@@ -1,4 +1,4 @@
-package com.example.model;
+package bnc.testnet.viewer.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -1,18 +1,37 @@
 package bnc.testnet.viewer.services;
 
 import basic.model.OrderResult;
+import basic.util.ApiClientUtil;
+import bnc.testnet.viewer.model.ChannelSubscription;
+import bnc.testnet.viewer.model.enc.JSONTextDecoder;
+import bnc.testnet.viewer.model.enc.JSONTextEncoder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import basic.util.ApiClientUtil;
+import reactor.core.publisher.Flux;
 
+import javax.websocket.*;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URI;
+import java.nio.channels.UnresolvedAddressException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @Service
+@ClientEndpoint(
+        encoders = {JSONTextEncoder.class},
+        decoders = {JSONTextDecoder.class}
+)
+// - gson
 public class MarketService {
 
     private static final Logger logger = LoggerFactory.getLogger(MarketService.class);
@@ -25,6 +44,9 @@ public class MarketService {
     private String recvWindow;
     @Value("${rest-uri}")
     private String baseUrl;
+
+    @Value("${ws-uri}")
+    private String wsUrl;
     @Value("${rest-uri-margin}")
     private String marginUrl;
     @Value("${type}")
@@ -36,7 +58,19 @@ public class MarketService {
     @Value("${api-secret}")
     private String apiSecret;
 
+    @Value("${symbol}")
+    private String symbol;
+    private Session session;
 
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    static {
+        MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        MAPPER.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true);
+//        MAPPER.configure(DeserializationFeature.UNWRAP_SINGLE_VALUE_ARRAYS, true);
+
+        MAPPER.configure(SerializationFeature.INDENT_OUTPUT, true);
+//        MAPPER.configure(SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED, true);
+    }
     public MarketService() {    }
 
     public OrderResult sendOrder(String side, BigDecimal quoteOrderQty, String symbol) throws IOException, InterruptedException {
@@ -106,6 +140,111 @@ public class MarketService {
         map.put("isolated", getProps().get("isolated"));
 
         return (HashMap<String, Object>) map;
+    }
+
+    public String unsubscribeTrades() throws IOException {
+        if (this.session != null && this.session.isOpen()) {
+            session.close();
+
+            return session.getId();
+        }
+        return null;
+    }
+
+    public Flux<String> subscribeKlines(String interval) {
+        Flux<String> flux = Flux.empty();
+        try {
+            if (this.session == null || !this.session.isOpen()) {
+                initSession(interval);
+            }
+            flux = getFlux();
+
+            ChannelSubscription subscription = ChannelSubscription.kLines(symbol, interval);
+            final String sub = MAPPER.writeValueAsString(subscription);
+
+            logger.info("sending " + sub);
+            this.session.getBasicRemote().sendText(sub);
+
+//                 list active
+            String list = MAPPER.writeValueAsString(ChannelSubscription.list());
+            this.session.getBasicRemote().sendText(list);
+            logger.info("sending " + list);
+
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        }
+
+        return flux;
+    }
+
+
+    public Consumer<HashMap<String, Object>> consumer;
+
+    public Flux<String> getFlux() {
+        return Flux.create(sink -> consumer = new Consumer<HashMap<String, Object>>() {
+            @Override
+            public void accept(HashMap<String, Object> items) {
+                final StringBuilder sb = new StringBuilder();
+                sb.append("{");
+                for (Map.Entry<String, Object> entry : items.entrySet()) {
+                    String k = entry.getKey();
+                    Object v = entry.getValue();
+                    if (Arrays.asList("t", "T", "o", "h", "l", "c").contains(k)) {
+                        sb.append(String.format("\"%s\" : %s,", k, v));
+                    }
+                }
+                sb.deleteCharAt(sb.length() - 1);  // last ','
+                sb.append("}");
+
+                sink.next(sb.toString());
+            }
+        });
+    }
+    @OnMessage
+    public void onMessage(Session session, String msg) {
+        try {
+            HashMap<String, Object> filteredMessage = new HashMap<>();
+            HashMap<String, Object> mapMessage = MAPPER.readValue( msg, new TypeReference<HashMap<String, Object>>(){} );
+            if (mapMessage.containsKey("k")) {
+                HashMap<String, Object> k = MAPPER.readValue(MAPPER.writeValueAsString(mapMessage.get("k")), new TypeReference<HashMap<String, Object>>() {
+                });
+                consumer.accept(k);
+            }
+
+//            mapMessage.forEach((k,v) -> {
+//                if(Arrays.asList("k").contains(k)){
+//
+//                    filteredMessage.putIfAbsent(k,v);
+//                }
+//            });
+//            consumer.accept(filteredMessage);
+//
+//            if ("trade".equals(mapMessage.get("e"))) {
+//                double quantity = Math.abs(Double.parseDouble(filteredMessage.get("q")));
+//                double price = Math.abs(Double.parseDouble(filteredMessage.get("p")));
+//
+//                mapMessage.forEach((k,v) -> logger.info("{}::{}",k,v));
+//                consumer.accept(filteredMessage);
+//            }
+        } catch (JsonProcessingException jpe) {
+            // ignore
+        } catch (Exception e) {
+            logger.warn("Could not read exchange message {}. Err: {}", msg, e);
+        }
+    }
+    private void initSession(String interval) {
+        Session ssn;
+        WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+        try {
+//            ssn = container.connectToServer(this, URI.create(wsUrl + "btcusdt" + "@trade"));
+            ssn = container.connectToServer(this, URI.create(wsUrl + "btcusdt" + "@kline_" + interval));
+            logger.info("session open: " + ssn.isOpen());
+
+            this.session = ssn;
+        } catch (DeploymentException | IOException | UnresolvedAddressException e) {
+            logger.warn("Could not initialize websocket session. ", e);
+//            SpringApplication.exit(context);
+        }
     }
 
 }

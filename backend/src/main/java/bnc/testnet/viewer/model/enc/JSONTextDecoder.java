@@ -1,4 +1,4 @@
-package com.example.model.enc;
+package bnc.testnet.viewer.model.enc;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
