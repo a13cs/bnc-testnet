@@ -148,12 +148,14 @@ export class CanvasChartComponent implements OnInit, AfterViewInit {
     console.log(this.range.controls.start.value)
     console.log(event)
 
-
+    this.http.get<any[]>('close/kLines').subscribe();
     this.setData()
   }
 
   picker() {
     console.log(this.range)
+
+    this.http.get<any[]>('close/kLines').subscribe();
     this.setData()
   }
 }

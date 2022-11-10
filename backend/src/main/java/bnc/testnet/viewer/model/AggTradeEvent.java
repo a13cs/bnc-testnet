@@ -50,9 +50,9 @@ public class AggTradeEvent extends AggTrade {
   public static AggTradeEvent fromJson(HashMap<String, String> trade) {
     AggTradeEvent event = new AggTradeEvent();
 
-    event.setTradeTime(Long.parseLong(trade.get("T")));
-    event.setPrice(trade.get("p"));
-    event.setQuantity(trade.get("q"));
+    event.setTradeTime(Long.parseLong((String)trade.get("T")));
+    event.setPrice((String)trade.get("p"));
+    event.setQuantity((String)trade.get("q"));
 
     return event;
   }

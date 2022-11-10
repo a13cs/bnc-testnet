@@ -1,9 +1,10 @@
-import {Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 // import {createChart, CrosshairMode, ISeriesApi, UTCTimestamp} from 'lightweight-charts';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {FormControl, FormGroup} from "@angular/forms";
 import {MatDialog} from "@angular/material/dialog";
 import {InfoComponent} from "./info/info.component";
+import {createChart, CrosshairMode, UTCTimestamp} from "lightweight-charts";
 
 @Component({
   selector: 'app-root',
@@ -86,35 +87,36 @@ export class AppComponent implements OnInit {
       plot(slowEma, title="slow", color=color.blue, linewidth=1, style=plot.style_line)
       plot(fastEma, title="fast", color=color.red, linewidth=2, style=plot.style_line)
 `
-//
-//     const chart = createChart(document.body  /* this.context.canvas */, {
-//       width: 900,
-//       height: 500,
-//       timeScale: {
-//         // barSpacing: 4,
-//         timeVisible: true,
-//         secondsVisible: true,
-//       },
-//       crosshair: {
-//         mode: CrosshairMode.Normal,
-//       }
-//     });
-// //     console.log(chart)
-//
-//     this.chart = chart;
-//
-//     chart.applyOptions({
-//       watermark: {
-//         color: 'rgba(11, 94, 29, 0.4)',
-//         visible: true,
-//         text: 'Positions',
-//         fontSize: 24,
-//         horzAlign: 'left',
-//         vertAlign: 'bottom',
-//       },
-//     });
-//
-//     this.series = chart.addCandlestickSeries();
+
+
+    const chart = createChart(document.body  /* this.context.canvas */, {
+      width: 900,
+      height: 500,
+      timeScale: {
+        // barSpacing: 4,
+        timeVisible: true,
+        secondsVisible: true,
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+      }
+    });
+//     console.log(chart)
+
+    this.chart = chart;
+
+    chart.applyOptions({
+      watermark: {
+        color: 'rgba(11, 94, 29, 0.4)',
+        visible: true,
+        text: 'Positions',
+        fontSize: 24,
+        horzAlign: 'left',
+        vertAlign: 'bottom',
+      },
+    });
+
+    this.series = chart.addCandlestickSeries();
 
     // ================================================
 
@@ -185,84 +187,81 @@ export class AppComponent implements OnInit {
 
     // ================================================
 
-//     console.log("accType " + AppComponent.accType)
-//     this.http.get<AccType>(this.prefix + '/accType').subscribe( d => {
-//       console.log("accType type " + d.type)
-//       AppComponent.accType = d.type
-//       AppComponent.isolated = d.isolated
-//       console.log("accType response " + AppComponent.accType)
-//     })
-//
-//     if(AppComponent.accType === "SPOT") {
-//       this.http.get<Acc>(this.prefix + '/acc').subscribe( d => {
-//         console.log(d)
-//         this.balances = d.balances?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
-//       })
-//     } else if (AppComponent.accType === "MARGIN") {
-//       this.http.get<MarginAcc>(this.prefix + '/acc').subscribe( d => {
-//         console.log(d)
-//         if (AppComponent.isolated === "TRUE") {
-//           this.balances = d.assets?.filter(b => b.symbol == 'BTCUSDT').flatMap(a => {
-//             return [
-//             {asset : a.baseAsset.asset, free : a.baseAsset.free},
-//             {asset : a.quoteAsset.asset, free : a.quoteAsset.free}
-//             ]
-//           })
-//         } else {
-//           this.balances = d.userAssets?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
-//         }
-//       })
-//     } else this.balances = []
-//
-//
-//
-// //   + use date-picker
-//     let start = new Date(Date.UTC(2022, 8, 22, 0, 0, 0, 0)).getTime() // 1000
-// //     let end = new Date(Date.UTC(2022, 12, 1, 0, 0, 0, 0)).getTime() // 1000
-//     let end = new Date().getTime() // 1000
-//     console.log("start: " + start)
-//     console.log("end: " + end)
-//
-//     let interval = '1m'
-//     this.http.get<any[]>(this.prefix + '/klines/' + /* start */ 0 + '/' + /* end */ 0 + '/' + interval).subscribe(
-//       d => {
-//         let lineData: any[] = []
-//
-//         let csvTimestamp = d.slice(0,1)[0][0];
-//         console.log("csvTimestamp: " + csvTimestamp)
-//
-//         d.slice(0).forEach( point => {
-// //           console.log(+point[0])
-//           if(+point[0]) {
-//               this.data.push({
-//                 open: point[/*"openPrice"*/1] | 0,
-//                 high: point[/*"highPrice"*/2] | 0,
-//                 low: point[/*"lowPrice"*/3] | 0,
-//                 close: point[/*"closePrice"*/4] | 0,
-//                 time: +point[/*"startTime"*/0] /1000 as UTCTimestamp
-//               })
-//               // let p : number = (Math.round(point[4] * 1000) / 1000)//.toFixed(2);
-//               lineData.push({time: +point[0]/1000 as UTCTimestamp, value: point[4] | 0})
-//             }
-//         })
-//         this.series.setData(this.data);
-//
-//         this.http.get<any[]>(this.prefix + '/myTrades').subscribe( d => {
-//           this.myTrades = d
-//
-//           let signals: any[] = d.map(s => {
-//             return {
-//               time:  +s['time'] /1000 as UTCTimestamp,
-//               color: s['isBuyer'] === true ? 'rgb(7,130,19)' : 'rgb(113,10,11)',
-//               position: 'aboveBar',
-//               shape: s['isBuyer'] === true ? "arrowUp" : "arrowDown",
-//               text: (s['quoteQty']) || ''
-//             }
-//           })
-//           // + use separate chart
-//           this.series.setMarkers(signals)
-//         })
-//       })
+    console.log("accType " + AppComponent.accType)
+    this.http.get<AccType>(this.prefix + '/accType').subscribe( d => {
+      console.log("accType type " + d.type)
+      AppComponent.accType = d.type
+      AppComponent.isolated = d.isolated
+      console.log("accType response " + AppComponent.accType)
+    })
+
+    if(AppComponent.accType === "SPOT") {
+      this.http.get<Acc>(this.prefix + '/acc').subscribe( d => {
+        console.log(d)
+        this.balances = d.balances?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+      })
+    } else if (AppComponent.accType === "MARGIN") {
+      this.http.get<MarginAcc>(this.prefix + '/acc').subscribe( d => {
+        console.log(d)
+        if (AppComponent.isolated === "TRUE") {
+          this.balances = d.assets?.filter(b => b.symbol == 'BTCUSDT').flatMap(a => {
+            return [
+            {asset : a.baseAsset.asset, free : a.baseAsset.free},
+            {asset : a.quoteAsset.asset, free : a.quoteAsset.free}
+            ]
+          })
+        } else {
+          this.balances = d.userAssets?.filter(b => b.asset == 'BTC' || b.asset == 'USDT') || []
+        }
+      })
+    } else this.balances = []
+
+
+    let start = new Date(Date.UTC(2022, 8, 22, 0, 0, 0, 0)).getTime() // 1000
+    let end = new Date().getTime() // 1000
+    console.log("start: " + start)
+    console.log("end: " + end)
+
+    let interval = '1m'
+    this.http.get<any[]>(this.prefix + '/klines/' + /* start */ 0 + '/' + /* end */ 0 + '/' + interval).subscribe(
+      d => {
+        let lineData: any[] = []
+
+        let csvTimestamp = d.slice(0,1)[0][0];
+        console.log("csvTimestamp: " + csvTimestamp)
+
+        d.slice(0).forEach( point => {
+//           console.log(+point[0])
+          if(+point[0]) {
+              this.data.push({
+                open: point[/*"openPrice"*/1] | 0,
+                high: point[/*"highPrice"*/2] | 0,
+                low: point[/*"lowPrice"*/3] | 0,
+                close: point[/*"closePrice"*/4] | 0,
+                time: +point[/*"startTime"*/0] /1000 as UTCTimestamp
+              })
+              // let p : number = (Math.round(point[4] * 1000) / 1000)//.toFixed(2);
+              lineData.push({time: +point[0]/1000 as UTCTimestamp, value: point[4] | 0})
+            }
+        })
+        this.series.setData(this.data);
+
+        this.http.get<any[]>(this.prefix + '/myTrades').subscribe( d => {
+          this.myTrades = d
+
+          let signals: any[] = d.map(s => {
+            return {
+              time:  +s['time'] /1000 as UTCTimestamp,
+              color: s['isBuyer'] === true ? 'rgb(7,130,19)' : 'rgb(113,10,11)',
+              position: 'aboveBar',
+              shape: s['isBuyer'] === true ? "arrowUp" : "arrowDown",
+              text: (s['quoteQty']) || ''
+            }
+          })
+          // + use separate chart
+          this.series.setMarkers(signals)
+        })
+      })
 
   }
 
@@ -313,46 +312,46 @@ export class AppComponent implements OnInit {
 
   test(value?: string) {
       // add test signals
-//       let h = new HttpHeaders()
-//       h.set('Content-Type', 'application/json')
-//
-//       let p : any = {script: value, type: 'pine'} // jython
-//       this.http.post<Result>(this.prefix + '/test/0/0/1m', p, {headers: h}).subscribe( d => {
-// //         console.log(d)
-// //       })
-// //
-// //       this.http.get<Result>(this.prefix + '/test/0/0/1m').subscribe( d => {
-//
-//         let sig: any[] = d.signals.map(s => {
-//           return {
-//             time:  +s[0] /1000 as UTCTimestamp,
-//             color: s[1] === 'B' ? 'rgb(7,130,19)' : 'rgb(113,10,11)',
-//             position: 'belowBar',
-//             shape: s[1] === 'B' ? "arrowUp" : "arrowDown",
-//             text: (s[1]) || ''
-//           }
-//         })
-//         this.series.setMarkers(sig)
-//
-//       // add indicators: fastEma, slowEma
-//         d.indicators.forEach(i => {
-//           console.log(i.name)
-//
-//           let lineSeries = this.chart.addLineSeries({
-//             color: i.color, // 'rgb(4,107,232)',
-//             lineWidth: 2,
-//           });
-//
-//           let lineData: any[] = i.values.map(ema => {
-//             return {
-//               time:  +ema[0] /1000 as UTCTimestamp,
-//               value: ema[1] || 0
-//             }
-//           })
-//
-//           lineSeries.setData(lineData)
-//         })
+      let h = new HttpHeaders()
+      h.set('Content-Type', 'application/json')
+
+      let p : any = {script: value, type: 'pine'} // jython
+      this.http.post<Result>(this.prefix + '/test/0/0/1m', p, {headers: h}).subscribe( d => {
+//         console.log(d)
 //       })
+//
+//       this.http.get<Result>(this.prefix + '/test/0/0/1m').subscribe( d => {
+
+        let sig: any[] = d.signals.map(s => {
+          return {
+            time:  +s[0] /1000 as UTCTimestamp,
+            color: s[1] === 'B' ? 'rgb(7,130,19)' : 'rgb(113,10,11)',
+            position: 'belowBar',
+            shape: s[1] === 'B' ? "arrowUp" : "arrowDown",
+            text: (s[1]) || ''
+          }
+        })
+        this.series.setMarkers(sig)
+
+      // add indicators: fastEma, slowEma
+        d.indicators.forEach(i => {
+          console.log(i.name)
+
+          let lineSeries = this.chart.addLineSeries({
+            color: i.color, // 'rgb(4,107,232)',
+            lineWidth: 2,
+          });
+
+          let lineData: any[] = i.values.map(ema => {
+            return {
+              time:  +ema[0] /1000 as UTCTimestamp,
+              value: ema[1] || 0
+            }
+          })
+
+          lineSeries.setData(lineData)
+        })
+      })
 
   }
 

@@ -24,11 +24,6 @@
         <strong class="header-item">Collector</strong>
       </a>
     </li>
-<!--    <li class="header-item">-->
-<!--      <a routerLinkActive='active' routerLink='/full'>-->
-<!--        <strong class="header-item">Runner</strong>-->
-<!--      </a>-->
-<!--    </li>-->
 
     <li style="display: inline;vertical-align: 50%; position: static; float: right; padding-right: 1%">
         <dialog-overview-example> </dialog-overview-example>
@@ -42,73 +37,73 @@
 <!--    <router-outlet></router-outlet>-->
 <!--  </div>-->
 
-<!--  <div>-->
-<!--    <a href="http://{{ jarLocation }}/jar/test.jar" target="_blank">-->
-<!--      Get JAR-->
-<!--    </a>-->
-<!--  </div>-->
-
 <canvas-chart></canvas-chart>
 
-<!--&lt;!&ndash;  add buy/sell &ndash;&gt;-->
-<!--<div>-->
-<!--  <div>-->
-<!--    <button (click)="buy(inb.value)" style="color: green">-->
-<!--      BUY-->
-<!--    </button>-->
-<!--    <input type="text" value="0" #inb style="width: 50px">-->
-<!--  </div>-->
-<!--  <div>-->
-<!--    <button (click)="sell(ins.value)" style="color: red">-->
-<!--      SELL-->
-<!--    </button>-->
-<!--    <input type="text" value="0" #ins style="width: 50px">-->
-<!--  </div>-->
+<div>
+  <a href="http://{{ jarLocation }}/jar/test.jar" target="_blank">
+    Get JAR
+  </a>
+</div>
 
-<!--</div>-->
 
-<!--<div>-->
-<!--  <h2> Lightweight-Charts </h2>-->
-<!--  <div>-->
-<!--    <button (click)="getAcc()" >-->
-<!--      Acc Info-->
-<!--    </button>-->
-<!--  </div>-->
-<!--  &lt;!&ndash;<span> Balance: {{balance | json}} </span>&ndash;&gt;-->
-<!--  <div *ngIf="balances.length">-->
-<!--      <h4>Acc type:&nbsp;</h4><h3>  {{ accTypeValue }}</h3>-->
-<!--      <h4>Isolated:&nbsp;</h4><h3>  {{ isAccIsolated }}</h3>-->
-<!--      <h4 *ngFor="let b of balances">Asset {{ b.asset }} &nbsp; {{ b.free }} </h4>-->
-<!--  </div>-->
-<!--  <br>-->
-<!--  <div style="padding: 10px">-->
-<!--&lt;!&ndash;    todo margin trades    &ndash;&gt;-->
-<!--    <button (click)="showTrades = !showTrades">-->
-<!--      {{showTrades ? 'Hide' : 'Show'}} Trades-->
-<!--    </button>-->
-<!--    <div *ngIf="showTrades">-->
-<!--  &lt;!&ndash;    table&ndash;&gt;-->
-<!--      <h5 *ngFor="let t of myTrades">-->
-<!--        Symbol {{ t.symbol }} &nbsp;-->
-<!--        Time {{ t.time }} &nbsp;-->
-<!--        QuoteQty {{ t.quoteQty }}-->
-<!--      </h5>-->
-<!--    </div>-->
-<!--    &lt;!&ndash;    todo margin trades on chart button   &ndash;&gt;-->
-<!--  </div>-->
-<!--</div>-->
+<!--  add buy/sell -->
+<div>
+  <div>
+    <button (click)="buy(inb.value)" style="color: green">
+      BUY
+    </button>
+    <input type="text" value="0" #inb style="width: 50px">
+  </div>
+  <div>
+    <button (click)="sell(ins.value)" style="color: red">
+      SELL
+    </button>
+    <input type="text" value="0" #ins style="width: 50px">
+  </div>
 
-<!--<div>-->
-<!--  <div style="float: right">-->
-<!--    <button (click)="test(t.value)" style="padding: 5px">-->
-<!--      RUN TEST-->
-<!--    </button>-->
-<!--    <br>-->
-<!--    <button (click)="save(t.value)" style="padding: 5px">-->
-<!--      SAVE STRATEGY-->
-<!--    </button>-->
-<!--  </div>-->
-<!--  <div>-->
-<!--    <textarea  [(ngModel)]="example" #t style="overflow: scroll; width: 500px; height: 300px"></textarea>-->
-<!--  </div>-->
-<!--</div>-->
+</div>
+
+<div>
+  <h2> Lightweight-Charts </h2>
+  <div>
+    <button (click)="getAcc()" >
+      Acc Info
+    </button>
+  </div>
+  <!--<span> Balance: {{balance | json}} </span>-->
+  <div *ngIf="balances.length">
+      <h4>Acc type:&nbsp;</h4><h3>  {{ accTypeValue }}</h3>
+      <h4>Isolated:&nbsp;</h4><h3>  {{ isAccIsolated }}</h3>
+      <h4 *ngFor="let b of balances">Asset {{ b.asset }} &nbsp; {{ b.free }} </h4>
+  </div>
+  <br>
+  <div style="padding: 10px">
+<!--    todo margin trades    -->
+    <button (click)="showTrades = !showTrades">
+      {{showTrades ? 'Hide' : 'Show'}} Trades
+    </button>
+    <div *ngIf="showTrades">
+  <!--    table-->
+      <h5 *ngFor="let t of myTrades">
+        Symbol {{ t.symbol }} &nbsp;
+        Time {{ t.time }} &nbsp;
+        QuoteQty {{ t.quoteQty }}
+      </h5>
+    </div>
+  </div>
+</div>
+
+<div>
+  <div style="float: right">
+    <button (click)="test(t.value)" style="padding: 5px">
+      RUN TEST
+    </button>
+    <br>
+    <button (click)="save(t.value)" style="padding: 5px">
+      SAVE STRATEGY
+    </button>
+  </div>
+  <div>
+    <textarea  [(ngModel)]="example" #t style="overflow: scroll; width: 500px; height: 300px"></textarea>
+  </div>
+</div>

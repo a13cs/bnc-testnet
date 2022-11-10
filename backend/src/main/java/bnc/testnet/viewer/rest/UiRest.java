@@ -88,6 +88,7 @@ public class UiRest {
     }
 
 
+    // POST
     @RequestMapping(method = RequestMethod.GET, path = "/jar/{name}", produces = "application/octet-stream")
     public byte[] getJar(@PathVariable(value = "name") String name) throws IOException {
         Map<String, Object> props = marketService.getProps();
@@ -234,10 +235,12 @@ public class UiRest {
 
         URL url = compService.createUrl(location);
         String jarLibPath = "BOOT-INF/lib/";
+
+        // + copy BOOT-INF/lib/
+        // compiler.setClassPath(dir);
+
         Map<String, byte[]> jarClasses = compService.getClasses(scheme, provider, url, jarLibPath);
-
         ICompiler compiler = compService.getCompiler(sources, jarClasses);
-
         compService.compile(compiler, sources);
 
 //        ByteArrayClassLoader byteArrayClassLoader = new ByteArrayClassLoader(jarClasses);
@@ -263,6 +266,8 @@ public class UiRest {
         http://localhost:8080/klines/1664582400000/1672531200000/15m
         1s,1m,3m,5m,15m,30m,1h,2h,4h,6h,8h,12h,1d,3d,1w,1M
      */
+
+    // + batch
     @RequestMapping(method = RequestMethod.GET, path = "/klines/{start}/{end}/{interval}")
     public String klines(@PathVariable(value = "start") String start,
                          @PathVariable(value = "end") String end,

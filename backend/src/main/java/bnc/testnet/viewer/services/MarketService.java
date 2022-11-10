@@ -14,10 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 
 import javax.websocket.*;
 import java.io.IOException;
@@ -38,6 +41,7 @@ import java.util.function.Consumer;
 public class MarketService {
 
     private static final Logger logger = LoggerFactory.getLogger(MarketService.class);
+    private WebSocketClient client = new ReactorNettyWebSocketClient();
 
     @Value("${name}")
     private String name;
@@ -74,6 +78,7 @@ public class MarketService {
         MAPPER.configure(SerializationFeature.INDENT_OUTPUT, true);
 //        MAPPER.configure(SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED, true);
     }
+
     public MarketService() {    }
 
     public OrderResult sendOrder(String side, BigDecimal quoteOrderQty, String symbol) throws IOException, InterruptedException {
@@ -146,6 +151,8 @@ public class MarketService {
     }
 
     public String unsubscribeTrades() throws IOException {
+//        subscribe.dispose();
+
         if (this.session != null && this.session.isOpen()) {
             session.close();
 
@@ -156,17 +163,22 @@ public class MarketService {
 
     public Flux<String> subscribeKlines(String interval) {
 
-//        WebSocketClient client = new ReactorNettyWebSocketClient();
-//        client.execute(
-//                URI.create("wss://stream.binance.com:9443/ws/btcusdt@trade"),
-//                session -> {
-//                    Flux<String> tradesFlux = session.receive()
-//                            .map(WebSocketMessage::getPayloadAsText)
-//                            .doOnNext(logger::info);
+//        WebSocketHandler handler = session -> {
+//            Flux<String> tradesFlux = session.receive()
+//                    .map(WebSocketMessage::getPayloadAsText)
+//                    .map(this::acceptKline)
+//                    .doOnNext(logger::info);
 //
-//                    return tradesFlux.then();
-//                }
+//            return tradesFlux.then();
+//        };
+//
+//        client = new ReactorNettyWebSocketClient();
+//        Disposable subscribe = client.execute(
+//                URI.create("wss://stream.binance.com:9443/ws/btcusdt@kline_" + interval),
+//                handler
 //        ).subscribe();
+//
+//        return getFlux();
 
         Flux<String> flux = Flux.empty();
         try {
@@ -193,71 +205,74 @@ public class MarketService {
         return flux;
     }
 
-
-    public Consumer<HashMap<String, Object>> consumer;
-
-    public Flux<String> getFlux() {
-        return Flux.create(sink -> consumer = new Consumer<HashMap<String, Object>>() {
-            @Override
-            public void accept(HashMap<String, Object> items) {
-                final StringBuilder sb = new StringBuilder();
-                sb.append("{");
-                for (Map.Entry<String, Object> entry : items.entrySet()) {
-                    String k = entry.getKey();
-                    Object v = entry.getValue();
-                    if (Arrays.asList("t", "T", "o", "h", "l", "c").contains(k)) {
-                        sb.append(String.format("\"%s\" : %s,", k, v));
-                    }
-                }
-                sb.deleteCharAt(sb.length() - 1);  // last ','
-                sb.append("}");
-
-                sink.next(sb.toString());
-            }
-        });
-    }
-    @OnMessage
-    public void onMessage(Session session, String msg) {
+    private String acceptKline(String message) {
         try {
             HashMap<String, Object> filteredMessage = new HashMap<>();
-            HashMap<String, Object> mapMessage = MAPPER.readValue( msg, new TypeReference<HashMap<String, Object>>(){} );
+            HashMap<String, Object> mapMessage = (HashMap<String, Object>) MAPPER.readValue( message, new TypeReference<HashMap<String, Object>>(){} );
             if (mapMessage.containsKey("k")) {
-                HashMap<String, Object> k = MAPPER.readValue(MAPPER.writeValueAsString(mapMessage.get("k")), new TypeReference<HashMap<String, Object>>() {
+                HashMap<String, Object> k = (HashMap<String, Object>) MAPPER.readValue(MAPPER.writeValueAsString(mapMessage.get("k")), new TypeReference<HashMap<String, Object>>() {
                 });
                 consumer.accept(k);
             }
-
-//            mapMessage.forEach((k,v) -> {
-//                if(Arrays.asList("k").contains(k)){
-//
-//                    filteredMessage.putIfAbsent(k,v);
-//                }
-//            });
-//            consumer.accept(filteredMessage);
-//
-//            if ("trade".equals(mapMessage.get("e"))) {
-//                double quantity = Math.abs(Double.parseDouble(filteredMessage.get("q")));
-//                double price = Math.abs(Double.parseDouble(filteredMessage.get("p")));
-//
-//                mapMessage.forEach((k,v) -> logger.info("{}::{}",k,v));
-//                consumer.accept(filteredMessage);
-//            }
         } catch (JsonProcessingException jpe) {
             // ignore
         } catch (Exception e) {
-            logger.warn("Could not read exchange message {}. Err: {}", msg, e);
+            logger.warn("Could not read exchange message {}. Err: {}", message, e);
         }
+        return  message;
+    }
+
+
+    public Consumer<Object> consumer;
+//    public Consumer<HashMap<String, Object>> consumer;
+
+    public Flux<String> getFlux() {
+        Consumer<Object> sinkConsumer = new Consumer<Object>() {
+            @Override
+            public void accept( final Object sink) {
+                consumer = new Consumer<Object>() {
+                    @Override
+                    public void accept(Object i) {
+                        HashMap<String, Object> items = (HashMap<String, Object>) i;
+                        final StringBuilder sb = new StringBuilder();
+                        sb.append("{");
+                        for (Map.Entry<String, Object> entry : items.entrySet()) {
+                            String k = (String) entry.getKey();
+                            Object v = entry.getValue();
+                            if (Arrays.asList("t", "T", "o", "h", "l", "c").contains(k)) {
+                                sb.append(String.format("\"%s\" : %s,", k, v));
+                            }
+                        }
+                        sb.deleteCharAt(sb.length() - 1);  // last ','
+                        sb.append("}");
+
+                        ((FluxSink<String>)sink).next(sb.toString());
+                    }
+                };
+            }
+        };
+        return Flux.create(sinkConsumer);
+    }
+    @OnMessage
+    public void onMessage(Session session, String msg) {
+        acceptKline(msg);
     }
     private void initSession(String interval) {
         Session ssn;
         WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         try {
-//            ssn = container.connectToServer(this, URI.create(wsUrl + "btcusdt" + "@trade"));
-            ssn = container.connectToServer(this, URI.create(wsUrl + "btcusdt" + "@kline_" + interval));
+            String url = "wss://stream.binance.com:9443/ws/";
+            ssn = container.connectToServer(this, URI.create(/*wsUrl*/ url + "btcusdt" + "@kline_" + interval));
             logger.info("session open: " + ssn.isOpen());
 
             this.session = ssn;
-        } catch (DeploymentException | IOException | UnresolvedAddressException e) {
+        } catch (DeploymentException e) {
+            logger.warn("Could not initialize websocket session. ", e);
+//            SpringApplication.exit(context);
+        } catch (IOException e) {
+            logger.warn("Could not initialize websocket session. ", e);
+//            SpringApplication.exit(context);
+        } catch (UnresolvedAddressException e) {
             logger.warn("Could not initialize websocket session. ", e);
 //            SpringApplication.exit(context);
         }
