@@ -1,9 +1,9 @@
 <ul style="list-style: none; padding-inline-start: 1%;">
   <li class="chart-controls">
-    <select-interval></select-interval>
+    <select-interval [selected]="selected" (onSelect)="onSelect($event)" ></select-interval>
   </li>
-  <li class="chart-controls">
-    <date-picker [range]="range"></date-picker>
+  <li class="chart-controls" >
+    <date-picker [range]="range" (onDateChange)="picker()"></date-picker>
   </li>
   <li class="chart-controls">
     <checkbox-continue></checkbox-continue>

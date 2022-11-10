@@ -1,6 +1,6 @@
 <mat-form-field appearance="outline">
   <mat-label>Select an interval</mat-label>
-  <mat-select disableRipple [(value)]="selected" (selectionChange)="onSelect()">
+  <mat-select disableRipple [(value)]="selected" (selectionChange)="onChange()">
       <mat-optgroup *ngFor="let group of intervalGroups" [label]="group.name"
                     [disabled]="group.disabled">
         <mat-option *ngFor="let i of group.interval" [value]="i.value"

@@ -1,5 +1,5 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
-import {createChart, CrosshairMode, UTCTimestamp} from "lightweight-charts";
+import {createChart, CrosshairMode, IChartApi, ISeriesApi, UTCTimestamp} from "lightweight-charts";
 import {FormControl, FormGroup} from "@angular/forms";
 import {HttpClient} from "@angular/common/http";
 import {Observable, tap} from "rxjs";
@@ -21,6 +21,10 @@ export class CanvasChartComponent implements OnInit, AfterViewInit {
     start: new FormControl<Date | null>(null),
     end: new FormControl<Date | null>(null),
   });
+  selected: string = '1m';
+
+  chart: any = {}
+  private candlestickSeries: ISeriesApi<"Candlestick"> | undefined ;
 
   constructor(private http: HttpClient) { }
 
@@ -60,63 +64,76 @@ export class CanvasChartComponent implements OnInit, AfterViewInit {
     // });
     // areaSeries.setData([
     //   { time: '2018-12-22', value: 32.51 },
-    //   { time: '2018-12-23', value: 31.11 },
-    //   { time: '2018-12-24', value: 27.02 },
-    //   { time: '2018-12-25', value: 27.32 },
-    //   { time: '2018-12-26', value: 25.17 },
-    //   { time: '2018-12-27', value: 28.89 },
-    //   { time: '2018-12-28', value: 25.46 },
-    //   { time: '2018-12-29', value: 23.92 },
-    //   { time: '2018-12-30', value: 22.68 },
-    //   { time: '2018-12-31', value: 22.67 },
     // ]);
 
-    const candlestickSeries = chart.addCandlestickSeries();
-    // candlestickSeries.setData([
-    //   { time: '2018-12-22', open: 75.16, high: 82.84, low: 36.16, close: 45.72 },
-    //   { time: '2018-12-23', open: 45.12, high: 53.90, low: 45.12, close: 48.09 },
-    //   { time: '2018-12-24', open: 60.71, high: 60.71, low: 53.39, close: 59.29 },
-    //   { time: '2018-12-25', open: 68.26, high: 68.26, low: 59.04, close: 60.50 },
-    //   { time: '2018-12-26', open: 67.71, high: 105.85, low: 66.67, close: 91.04 },
-    //   { time: '2018-12-27', open: 91.04, high: 121.40, low: 82.70, close: 111.40 },
-    //   { time: '2018-12-28', open: 111.51, high: 142.83, low: 103.34, close: 131.25 },
-    //   { time: '2018-12-29', open: 131.33, high: 151.17, low: 77.68, close: 96.43 },
-    //   { time: '2018-12-30', open: 106.33, high: 110.20, low: 90.39, close: 98.10 },
-    // ]);
+    this.candlestickSeries = chart.addCandlestickSeries();
+
 
     chart.timeScale().fitContent();
     chart.priceScale().applyOptions({autoScale: true});
 
     // + ticker/price stream
 
-    this.getKLineEvent().subscribe(d => {
-      let message = JSON.parse(d);
-      console.log(message)
+    this.setData()
+  }
 
-      let bar = {
-        time: +message['t']/1000 as UTCTimestamp | '',
-        open:  message['o'],
-        high:  message['h'],
-        low:   message['l'],
-        close: message['c']
-      };
+  setData() {
+    // close/klines
 
-      console.log('bar: ', d)
-      candlestickSeries.update(bar);
+    let start = this.range.controls.start.value ? this.range.controls.start.value?.getTime() : new Date().getTime()  //new Date(Date.UTC(2022, 10, 10, 0, 0, 0, 0)).getTime() // 1000
+    let end = this.range.controls.end.value ? this.range.controls.end.value?.getTime() : new Date().getTime()
+    console.log("start: " + start)
+    console.log("end: " + end)
 
-    });
+    this.http.get<any[]>('klines/' +  start  + '/' +  end  + '/' + this.selected).subscribe(
+      d => {
+        // let lineData: any[] = []
+        let data: any[] = []
 
+        d.slice(0).forEach( point => {
+//           console.log(+point[0])
+          if(+point[0]) {
+            data.push({
+              open: point[/*"openPrice"*/1] | 0,
+              high: point[/*"highPrice"*/2] | 0,
+              low: point[/*"lowPrice"*/3] | 0,
+              close: point[/*"closePrice"*/4] | 0,
+              time: +point[/*"startTime"*/0] /1000 as UTCTimestamp
+            })
+            // let p : number = (Math.round(point[4] * 1000) / 1000)//.toFixed(2);
+            // lineData.push({time: +point[0]/1000 as UTCTimestamp, value: point[4] | 0})
+          }
+        })
+        this.candlestickSeries?.setData(data);
+
+        this.getKLineEvent().subscribe(d => {
+          let message = JSON.parse(d);
+          // console.log(message)
+
+          let bar = {
+            time: +message['t']/1000 as UTCTimestamp | '',
+            open:  message['o'],
+            high:  message['h'],
+            low:   message['l'],
+            close: message['c']
+          };
+
+          // console.log('bar: ', d)
+          this.candlestickSeries?.update(bar);
+          // chart.timeScale().fitContent();
+        });
+      })
 
   }
 
   getKLineEvent(): Observable<any> {
-    let interval = '3m'
+    // let interval = '3m'
 
     return Observable.create((observer: { next: (arg0: string) => void; error: (arg0: string) => any; }) => {
-      const eventSource = new EventSource(`sub/kLines/` + interval);
+      const eventSource = new EventSource(`sub/kLines/` + this.selected);
 
       eventSource.onmessage = (event) => {
-        console.log('eventSource.onmessage: ', event);
+        // console.log('eventSource.onmessage: ', event);
         // const json = JSON.parse(event.data);
         // console.log(json)
         observer.next(event.data);
@@ -126,7 +143,17 @@ export class CanvasChartComponent implements OnInit, AfterViewInit {
     });
   }
 
-  logRange() {
+  onSelect(event? : any) {
+    this.selected = event
     console.log(this.range.controls.start.value)
+    console.log(event)
+
+
+    this.setData()
+  }
+
+  picker() {
+    console.log(this.range)
+    this.setData()
   }
 }

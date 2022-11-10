@@ -14,6 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.socket.WebSocketMessage;
+import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
+import org.springframework.web.reactive.socket.client.WebSocketClient;
 import reactor.core.publisher.Flux;
 
 import javax.websocket.*;
@@ -152,6 +155,19 @@ public class MarketService {
     }
 
     public Flux<String> subscribeKlines(String interval) {
+
+//        WebSocketClient client = new ReactorNettyWebSocketClient();
+//        client.execute(
+//                URI.create("wss://stream.binance.com:9443/ws/btcusdt@trade"),
+//                session -> {
+//                    Flux<String> tradesFlux = session.receive()
+//                            .map(WebSocketMessage::getPayloadAsText)
+//                            .doOnNext(logger::info);
+//
+//                    return tradesFlux.then();
+//                }
+//        ).subscribe();
+
         Flux<String> flux = Flux.empty();
         try {
             if (this.session == null || !this.session.isOpen()) {

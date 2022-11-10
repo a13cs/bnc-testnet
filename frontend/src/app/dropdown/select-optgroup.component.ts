@@ -1,4 +1,5 @@
-import {Component} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Observable} from "rxjs";
 
 interface Interval {
   value: string;
@@ -16,7 +17,14 @@ interface IntervalGroup {
   templateUrl: 'select-optgroup.component.html'
 })
 export class SelectOptgroupComponent {
+  @Input()
   selected: string = '';
+
+  emitter: EventEmitter<string> = new EventEmitter<string>()
+
+  @Output() onSelect: Observable<string> = Observable.create((observer: { next: (arg0: string) => void; error: (arg0: string) => any; }) => {
+   this.emitter.subscribe(d => observer.next(d))
+  })
 
   intervalGroups: IntervalGroup[] = [
     {
@@ -72,8 +80,9 @@ export class SelectOptgroupComponent {
     },
   ];
 
-  onSelect() {
+  onChange() {
+    this.emitter.emit(this.selected)
     console.log(this.selected)
-    // + set interval BE
+
   }
 }
