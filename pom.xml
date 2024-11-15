@@ -23,10 +23,11 @@
 
 
 	<modules>
-		<module>java-basic</module>
-		<module>frontend</module>
-		<module>backend</module>
-		<module>java-service</module>
-	</modules>
+<!--		<module>java-basic</module>-->
+<!--		<module>frontend</module>-->
+<!--		<module>backend</module>-->
+<!--		<module>java-service</module>-->
+        <module>webhook-basic</module>
+    </modules>
 
 </project>
