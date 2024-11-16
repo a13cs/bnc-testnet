@@ -1,6 +1,8 @@
 package test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,21 +12,24 @@ import test.model.OrderResult;
 import test.util.OrderService;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 @RestController
 public class Rest {
 
+    private static final Logger logger = LoggerFactory.getLogger(Rest.class);
+
     @Autowired
     OrderService orderService;
-    private final ObjectMapper mapper = new ObjectMapper();
 
     @RequestMapping(method = RequestMethod.POST, path = "/execute")
-    public String saveProps(@RequestBody Map<String, Object> props) throws IOException, InterruptedException {
-        String action = String.valueOf(props.get("action"));
+    public Map<String,String> execute(@RequestBody Map<String, Object> json) throws IOException, InterruptedException {
+        String action = String.valueOf(json.get("action"));
         OrderResult orderResult = orderService.processOrder(action);
+        logger.info(orderResult.toString());
 
-        return mapper.writeValueAsString(orderResult);
+        return Collections.singletonMap("result", orderResult.getOrderId());
     }
 
 

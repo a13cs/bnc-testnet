@@ -139,4 +139,22 @@ public class OrderResult {
 
     private String side; // SELL",
 
+    @Override
+    public String toString() {
+        return "OrderResult{" +
+                "symbol='" + symbol + '\'' +
+                ", orderId='" + orderId + '\'' +
+                ", orderListId='" + orderListId + '\'' +
+                ", clientOrderId='" + clientOrderId + '\'' +
+                ", transactTime='" + transactTime + '\'' +
+                ", price='" + price + '\'' +
+                ", origQty='" + origQty + '\'' +
+                ", executedQty='" + executedQty + '\'' +
+                ", cummulativeQuoteQty='" + cummulativeQuoteQty + '\'' +
+                ", status='" + status + '\'' +
+                ", timeInForce='" + timeInForce + '\'' +
+                ", type='" + type + '\'' +
+                ", side='" + side + '\'' +
+                '}';
+    }
 }

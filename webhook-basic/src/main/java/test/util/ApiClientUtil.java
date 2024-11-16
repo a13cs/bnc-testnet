@@ -12,6 +12,8 @@ import test.model.OrderResult;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -43,7 +45,7 @@ public final class ApiClientUtil {
         String time = getSimple("time", Collections.emptyMap(), props);
         HashMap<String, String> responseJson = OM.readValue(time, new TypeReference<HashMap<String, String>>() { });
 
-        logger.info("time " + time);
+//        logger.info("time " + time);
 
 
         return (String) responseJson.get("serverTime");
@@ -143,7 +145,7 @@ public final class ApiClientUtil {
     ) throws IOException, InterruptedException {
 
         String serverTime = getServerTime(props);
-
+        logger.info("Side {} quoteOrderQty {}", side, quoteOrderQty);
 
         StringBuilder sb = new StringBuilder()
                 .append("timestamp=").append(serverTime)
@@ -152,6 +154,7 @@ public final class ApiClientUtil {
                 .append("&")
                 .append("side=").append(side)
                 .append("&")
+//                .append(buy.equals(side) ? "quoteOrderQty=" : "quantity=").append(buy.equals(side) ? quoteOrderQty : quantity) // or quantity
                 .append("quoteOrderQty=").append(quoteOrderQty) // or quantity
                 .append("&")
                 .append("symbol=").append(symbol.toUpperCase(Locale.ROOT))

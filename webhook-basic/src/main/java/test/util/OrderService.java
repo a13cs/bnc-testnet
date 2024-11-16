@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import test.model.AccInfoResponse;
+import test.model.Asset;
 import test.model.OrderResult;
 
 import java.io.BufferedReader;
@@ -18,10 +18,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,8 +26,9 @@ public class OrderService {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
-    private static BigDecimal reverseOrderQuantity = BigDecimal.valueOf(0);
+    private static BigDecimal reverseOrderQuantity = BigDecimal.ZERO;
     private static boolean inTrade = false;
+    private static String startSide;
 
     private final HashMap<String, String> props = new HashMap<>();
 
@@ -39,8 +37,8 @@ public class OrderService {
 
     private static final String BTCUSDT = "BTCUSDT";
 
-    @Value("${name}")
-    String name;
+//    @Value("${name}")
+//    String name;
 
     public OrderService() {
         OM = new ObjectMapper();
@@ -61,6 +59,7 @@ public class OrderService {
     }
 
     public OrderResult processOrder(String model) throws IOException, InterruptedException {
+        logger.info("=====================================================================");
         double percentage = Double.parseDouble(props.get("position-entry"));
         // uppercase
         String side = model.split("_")[0];
@@ -70,66 +69,144 @@ public class OrderService {
             return new OrderResult();
         }
 
-        String usdt = "0";
+//        if ("MARGIN".equals(type)) {
+//            if (Boolean.parseBoolean(getProps().get("isolated"))) {
+//                usdt = getIsolatedQuoteAsset("BTCUSDT");
+//            } else {
+//                usdt = getMarginAsset(asset);
+//            }
+//        }
         String type = props.get("type");
-        if ("MARGIN".equals(type)) {
-            if (Boolean.parseBoolean(getProps().get("isolated"))) {
-                usdt = getIsolatedQuoteAsset("BTCUSDT");
-            } else {
-                usdt = getMarginAsset("USDT");
-            }
-        }
-        if ("SPOT".equals(type) || type == null) {
-            usdt = getSpotAsset("USDT");
-        }
+        Map<String, Asset> assetsMap = getAssetsMap(type);
+        Asset btc = assetsMap.get("BTC");
+        logger.info("BTC: {} USDT value: {}", btc.getValue(), btc.getUsdtValue());
+        Asset usdt = assetsMap.get("USDT");
+        logger.info("USDT: {}", usdt.getValue());
 
-        if (usdt == null) {
-            logger.info("No free assets.");
-            return new OrderResult();
-        }
+//        String qValue = "0";
+//        if ("SPOT".equals(type) || type == null) {
+//            if ("SELL".equals(side)) {
+//                Asset btc = assetsMap.get("BTC");
+//                qValue = new BigDecimal(btc.getUsdtValue())
+//                        .multiply(BigDecimal.valueOf(percentage))
+//                        .round(new MathContext(8))
+//                        .toPlainString();
+//                logger.info("BTC: {} USDT value: {}", btc.getValue(), btc.getUsdtValue());
+//        } else {
+//                Asset usdt = assetsMap.get("USDT");
+//                qValue = new BigDecimal(usdt.getValue())
+//                        .multiply(BigDecimal.valueOf(percentage))
+//                        .round(new MathContext(8))
+//                        .toPlainString();
+//                logger.info("USDT: {}", usdt.getValue());
+//            }
+//        }
+//        logger.info("Quantity: " + qValue);
 
-        BigDecimal freeUsdt = new BigDecimal(usdt);
-        BigDecimal quantity = BigDecimal.valueOf(percentage).multiply(freeUsdt);
 
-        if (!inTrade && reverseOrderQuantity.intValue() == 0) {
+        BigDecimal btcUsdtValue = new BigDecimal(assetsMap.get("BTC").getUsdtValue());
+        BigDecimal usdtValue = new BigDecimal(assetsMap.get("USDT").getValue());
+        BigDecimal total = btcUsdtValue.add(usdtValue);
+        BigDecimal quantity = total.multiply(BigDecimal.valueOf(percentage))
+                .round(new MathContext(8));
+        logger.info("qValue: {}", quantity.toPlainString());
+
+        if (!inTrade /*&& reverseOrderQuantity.intValue() == 0*/) {
             inTrade = true;
+            startSide = side;
             reverseOrderQuantity = quantity;
+            logger.info("new trade, reverseOrderQuantity = quantity");
+        } else {
+            inTrade = false;
+            quantity = reverseOrderQuantity;
+            reverseOrderQuantity = BigDecimal.ZERO;
+
+//            if (side.equals(startSide)) {
+//                // missed close
+//                side = reverseSide(side);  // close
+//
+//                // + send new trade order
+//            }
+            logger.info("close trade, quantity = reverseOrderQuantity");
         }
 
-        BigDecimal orderQty = inTrade ? reverseOrderQuantity : quantity;
+        // percentage * total < 10 split balance and retry
+        // response: {"code":-1013,"msg":"Filter failure: NOTIONAL"}
+        BigDecimal notional = BigDecimal.TEN;
 
-        String qValue = orderQty
-                .round(new MathContext(8))
-                /*.movePointLeft(1)*/
-                .toPlainString();
 
-        logger.info("Quantity: " + qValue);
+        boolean splitForNotional = usdtValue.subtract(notional).doubleValue() <= 0
+                || btcUsdtValue.subtract(notional).doubleValue() <= 0;
+        boolean splitForQuantity = usdtValue.subtract(quantity).doubleValue() <= 0
+                || btcUsdtValue.subtract(quantity).doubleValue() <= 0;
 
-        // may need to enable before
-        return ApiClientUtil.sendOrder(side, qValue, BTCUSDT, getProps());
+        if (splitForNotional || splitForQuantity) {
+            logger.info("================ split ================ ");
+            quantity = total.multiply(BigDecimal.valueOf(0.5)).round(new MathContext(8));
+            inTrade = false;
+            reverseOrderQuantity = BigDecimal.ZERO;
+            side = reverseSide(side);
+        }
 
+        OrderResult orderResult = ApiClientUtil.sendOrder(side, quantity.toPlainString(), BTCUSDT, getProps());
+
+        if ("SPOT".equals(type) || type == null) {
+            Map<String, Asset> assetsMapAfter = getAssetsMap(type);
+            Asset btcAfter = assetsMapAfter.get("BTC");
+            logger.info("BTC: {} USDT value: {}", btcAfter.getValue(), btcAfter.getUsdtValue());
+            Asset usdtAfter = assetsMapAfter.get("USDT");
+            logger.info("USDT: {}", usdtAfter.getValue());
+        }
+
+        return orderResult;
     }
 
-    public String getSpotAsset(String asset) throws IOException, InterruptedException {
-        HashMap<String, String> queryParams = new HashMap<>();
-        String body = ApiClientUtil.get("account", queryParams, getProps());
+    private static String reverseSide(String side) {
+        side = "BUY".equals(side) ? "SELL" : "BUY";
+        return side;
+    }
 
-        AccInfoResponse response;
-        try {
-            response = OM.readValue(body, AccInfoResponse.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private Map<String, Asset> getAssetsMap(String type) throws IOException, InterruptedException {
+        Map<String, Asset> assets = new HashMap<>();
+        if ("SPOT".equals(type) || type == null) {
+            String btcAsset = getAssetFreeBalance("BTC");
+            BigDecimal usdtValueBtc = new BigDecimal(btcAsset).multiply(new BigDecimal(getPrice()));
+            String usdtValue = usdtValueBtc.round(new MathContext(8)).toPlainString();
+            assets.put("BTC", new Asset("BTC", btcAsset, usdtValue));
+
+            String usdtAsset = getAssetFreeBalance("USDT");
+            BigDecimal usdt = new BigDecimal(usdtAsset).round(new MathContext(8));
+            String valueUsdt = usdt.toPlainString();
+            assets.put("USDT", new Asset("USDT", valueUsdt, valueUsdt));
         }
+        return assets;
+    }
 
-        List<AccInfoResponse.Balance> balances = response.getBalances();
-        if (balances != null) {
-            AccInfoResponse.Balance assetBalance = balances.stream().filter(b -> asset.equals(b.getAsset())).findFirst().orElse(null);
-            if (assetBalance != null) {
-                return assetBalance.getFree();
-            }
-        }
+    private String getAssetFreeBalance(final String asset) throws IOException, InterruptedException {
+        List<AccInfoResponse.Balance> spotBalance = getSpotBalance();
+        AccInfoResponse.Balance assetBalance = spotBalance.stream()
+                .filter(b -> asset.equals(b.getAsset())).findFirst().orElse(null);
 
-        return null;
+        return assetBalance != null ? assetBalance.getFree() : null;
+    }
+
+    private String getPrice() throws IOException, InterruptedException {
+        String priceResponse = ApiClientUtil.getSimple(
+                "ticker/price",
+                Collections.singletonMap("symbol", BTCUSDT),
+                props);
+
+        logger.info("Current ticker/price " + priceResponse);
+        HashMap<String, String> responseJson = OM.readValue(priceResponse, new TypeReference<HashMap<String, String>>() { });
+
+        return responseJson.get("price");
+    }
+
+    public List<AccInfoResponse.Balance> getSpotBalance() throws IOException, InterruptedException {
+        String body = ApiClientUtil.get("account", new HashMap<>(), getProps());
+
+        AccInfoResponse response = OM.readValue(body, AccInfoResponse.class);
+        return response.getBalances();
     }
 
     public String getMarginAsset(String asset) throws IOException, InterruptedException {
@@ -139,22 +216,11 @@ public class OrderService {
         // get asset json
         HashMap<String, Object> responseJson = OM.readValue(resp, new TypeReference<HashMap<String, Object>>() {
         });
-        String assetsJson = OM.writeValueAsString(responseJson.get("userAssets"));
-        List< Object> userAssetsJson = OM.readValue(assetsJson, new TypeReference<List<Object>>() {
-        });
-        logger.info(userAssetsJson.get(0).toString());
+        List<LinkedHashMap> assets = (List<LinkedHashMap>) OM.readValue(resp, new TypeReference<HashMap<String, Object>>() { })
+                .get("userAssets");
+        LinkedHashMap usdt = assets.stream().filter(l -> l.containsValue("USDT")).collect(Collectors.toList()).get(0);
 
-        for(Object a : userAssetsJson) {
-            if (a.toString().contains(asset)) {
-                String[] pair = a.toString().split(",")[1].split("=");
-                logger.info(pair[1]);
-
-                return pair[1];
-            }
-        }
-
-        return null;
-
+        return (String) usdt.get("free");
     }
 
     public String getIsolatedQuoteAsset(String symbol) throws IOException, InterruptedException {
