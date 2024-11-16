@@ -107,7 +107,7 @@ public final class ApiClientUtil {
                 .build();
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        logger.info("response: " + response.body());
+        logger.debug("response: " + response.body());
 
         return (String) response.body();
     }
