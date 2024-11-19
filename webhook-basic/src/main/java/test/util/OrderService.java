@@ -62,9 +62,11 @@ public class OrderService {
         logger.info("=====================================================================");
         double percentage = Double.parseDouble(props.get("position-entry"));
         // uppercase
-        String side = model.split("_")[0];
-        String name = model.split("_")[1];
-        if (props.get("name").contains(name)) {
+        String[] s = model.split("_");
+        String side = s[0];
+        String name = s[1];
+        String tradeClose = s[2];
+        if (!props.get("name").contains(name)) {
             logger.info("Name not matched. " + name);
             return new OrderResult();
         }
