@@ -64,7 +64,7 @@ public class OrderService {
         // uppercase
         String side = model.split("_")[0];
         String name = model.split("_")[1];
-        if (!name.equalsIgnoreCase(props.get("name"))) {
+        if (props.get("name").contains(name)) {
             logger.info("Name not matched. " + name);
             return new OrderResult();
         }
