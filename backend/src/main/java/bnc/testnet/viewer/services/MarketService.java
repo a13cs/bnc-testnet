@@ -1,7 +1,5 @@
 package bnc.testnet.viewer.services;
 
-import basic.model.OrderResult;
-import basic.util.ApiClientUtil;
 import bnc.testnet.viewer.model.ChannelSubscription;
 import bnc.testnet.viewer.model.enc.JSONTextDecoder;
 import bnc.testnet.viewer.model.enc.JSONTextEncoder;
@@ -10,15 +8,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import example.util.ApiClientUtil;
+import example.util.OrderResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.socket.WebSocketHandler;
-import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
 import org.springframework.web.reactive.socket.client.WebSocketClient;
-import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
@@ -88,8 +85,8 @@ public class MarketService {
                 side,
                 quoteOrderQty.toPlainString(),
                 symbol,
-                null,
-                getProps()  // use current service props
+                getProps(), // use current service props
+                null
         );
     }
 
@@ -99,7 +96,7 @@ public class MarketService {
             urlPath = "isolated/" + urlPath;
         }
         // uses props to fill query params
-        return (String) ApiClientUtil.get(urlPath, queryParams, null, getProps());
+        return (String) ApiClientUtil.get(urlPath, queryParams, getProps(), null);
     }
 
     public String getAccTradesList(HashMap<String, String> queryParams) throws IOException, InterruptedException {

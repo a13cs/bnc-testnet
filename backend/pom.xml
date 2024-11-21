@@ -30,7 +30,7 @@
 
 		<dependency>
 			<groupId>com.example</groupId>
-			<artifactId>java-basic</artifactId>
+			<artifactId>java-basic2</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 

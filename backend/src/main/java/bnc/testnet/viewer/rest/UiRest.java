@@ -1,11 +1,11 @@
 package bnc.testnet.viewer.rest;
 
-import basic.model.OrderResult;
 import bnc.testnet.viewer.parse.DslService;
 import bnc.testnet.viewer.services.AwsJarService;
 import bnc.testnet.viewer.services.CompService;
 import bnc.testnet.viewer.services.MarketService;
 import bnc.testnet.viewer.services.StrategyService;
+import example.util.OrderResult;
 import org.codehaus.commons.compiler.CompileException;
 import org.codehaus.commons.compiler.ICompiler;
 import org.codehaus.commons.compiler.util.ResourceFinderClassLoader;

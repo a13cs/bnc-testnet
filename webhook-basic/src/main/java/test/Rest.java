@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import test.model.OrderResult;
 import test.util.OrderService;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
@@ -32,5 +33,11 @@ public class Rest {
         return Collections.singletonMap("result", orderResult.getOrderId());
     }
 
+    @RequestMapping(method = RequestMethod.POST, path = "/log")
+    public String log(@RequestBody Map<String, Object> json, HttpServletRequest request) {
+        String addr = request.getRemoteAddr();
+        logger.info("addr " + addr);
+        return addr;
+    }
 
 }

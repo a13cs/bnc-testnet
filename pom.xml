@@ -24,6 +24,7 @@
 
 	<modules>
 		<module>java-basic</module>
+		<module>java-basic2</module>
 		<module>frontend</module>
 		<module>backend</module>
 		<module>java-service</module>
