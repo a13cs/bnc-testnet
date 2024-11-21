@@ -67,14 +67,12 @@ public final class ApiClientUtil {
             Context context
     ) throws IOException, InterruptedException {
 
-        String time = getServerTime(props);
-        long milli = time != null ? Long.parseLong(time) : new Date().getTime();
+        long milli = new Date().getTime();
 
         StringBuilder sb = new StringBuilder();
         sb.append("timestamp=").append(milli);
 
         queryParams.put("recvWindow", (String) props.get("recv-window"));
-//        queryParams.forEach((k, v) -> sb.append("&").append(k).append("=").append(v));
         for (String k : queryParams.keySet()) {
             sb.append("&").append(k).append("=").append((String) queryParams.get(k));
         }
@@ -145,16 +143,15 @@ public final class ApiClientUtil {
             Context context
     ) throws IOException, InterruptedException {
 
-        String serverTime = getServerTime(props);
         if (context != null) {
         LambdaLogger contextLogger = context.getLogger();
         contextLogger.log(String.format("Side %s quoteOrderQty %s", side, quoteOrderQty));
         }
 
         StringBuilder sb = new StringBuilder()
-                .append("timestamp=").append(serverTime)
+                .append("timestamp=").append(new Date().getTime())
                 .append("&")
-                .append("recvWindow=").append((String) props.get("recv-window"))  // 60_000
+                .append("recvWindow=").append((String) props.get("recv-window"))
                 .append("&")
                 .append("side=").append(side)
                 .append("&")
