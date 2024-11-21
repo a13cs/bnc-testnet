@@ -67,7 +67,7 @@ public final class ApiClientUtil {
             Context context
     ) throws IOException, InterruptedException {
 
-        long milli = new Date().getTime();
+        long milli = new Date().getTime() + 1000 * 2 * 3600;  // fix
 
         StringBuilder sb = new StringBuilder();
         sb.append("timestamp=").append(milli);
@@ -102,7 +102,13 @@ public final class ApiClientUtil {
                 .headers("X-MBX-APIKEY", (String) props.get("api-key"))
                 .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> response = null;
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (Exception e) {
+            // fix
+            response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        }
 
 //        LambdaLogger contextLogger = context.getLogger();
 //        contextLogger.log("response: " + response.body());
@@ -148,8 +154,9 @@ public final class ApiClientUtil {
         contextLogger.log(String.format("Side %s quoteOrderQty %s", side, quoteOrderQty));
         }
 
+        long time = new Date().getTime() + 2 * 3600 * 1000;
         StringBuilder sb = new StringBuilder()
-                .append("timestamp=").append(new Date().getTime())
+                .append("timestamp=").append(time)
                 .append("&")
                 .append("recvWindow=").append((String) props.get("recv-window"))
                 .append("&")
