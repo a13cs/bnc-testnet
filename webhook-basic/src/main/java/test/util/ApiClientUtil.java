@@ -69,8 +69,8 @@ public final class ApiClientUtil {
             Map<String, String> props
     ) throws IOException, InterruptedException {
 
-        String time = getServerTime(props);
-        long milli = time != null ? Long.parseLong(time) : new Date().getTime();
+//        String time = getServerTime(props);
+        long milli = /*time != null ? Long.parseLong(time) :*/ new Date().getTime();
 
         StringBuilder sb = new StringBuilder();
         sb.append("timestamp=").append(milli);
@@ -144,13 +144,13 @@ public final class ApiClientUtil {
             Map<String, String> props
     ) throws IOException, InterruptedException {
 
-        String serverTime = getServerTime(props);
+//        String serverTime = getServerTime(props);
         logger.info("Side {} quoteOrderQty {}", side, quoteOrderQty);
 
         StringBuilder sb = new StringBuilder()
-                .append("timestamp=").append(serverTime)
+                .append("timestamp=").append(/*serverTime*/ new Date().getTime())
                 .append("&")
-                .append("recvWindow=").append((String) props.get("recv-window"))  // 60_000
+                .append("recvWindow=").append( props.get("recv-window"))  // 5_000
                 .append("&")
                 .append("side=").append(side)
                 .append("&")

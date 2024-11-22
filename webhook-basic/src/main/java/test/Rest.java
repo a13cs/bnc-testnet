@@ -33,11 +33,4 @@ public class Rest {
         return Collections.singletonMap("result", orderResult.getOrderId());
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/log")
-    public String log(@RequestBody Map<String, Object> json, HttpServletRequest request) {
-        String addr = request.getRemoteAddr();
-        logger.info("addr " + addr);
-        return addr;
-    }
-
 }

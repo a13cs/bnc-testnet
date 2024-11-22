@@ -3,7 +3,6 @@ package example.util;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -149,7 +148,8 @@ public class OrderService {
         Map<String, Asset> assets = new HashMap<>();
         if ("SPOT".equals(type) || type == null) {
             String btcAsset = getAssetFreeBalance("BTC", context);
-            BigDecimal usdtValueBtc = new BigDecimal(btcAsset).multiply(new BigDecimal(getPrice(context)));
+            String price = ApiClientUtil.getCurrentPrice(getProps(), context);
+            BigDecimal usdtValueBtc = new BigDecimal(btcAsset).multiply(new BigDecimal(price));
             String usdtValue = usdtValueBtc.round(new MathContext(8)).toPlainString();
             assets.put("BTC", new Asset("BTC", btcAsset, usdtValue));
 
@@ -167,19 +167,6 @@ public class OrderService {
                 .filter(b -> asset.equals(b.getAsset())).findFirst().orElse(null);
 
         return assetBalance != null ? assetBalance.getFree() : null;
-    }
-
-    private String getPrice(Context context) throws IOException, InterruptedException {
-        String priceResponse = ApiClientUtil.getSimple(
-                "ticker/price",
-                Collections.singletonMap("symbol", BTCUSDT),
-                props);
-
-        LambdaLogger contextLogger = context.getLogger();
-        contextLogger.log("Current ticker/price " + priceResponse);
-        HashMap<String, String> responseJson = OM.readValue(priceResponse, new TypeReference<HashMap<String, String>>() { });
-
-        return responseJson.get("price");
     }
 
     public List<AccInfoResponse.Balance> getSpotBalance(Context context) throws IOException, InterruptedException {

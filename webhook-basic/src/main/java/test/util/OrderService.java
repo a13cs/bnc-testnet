@@ -172,7 +172,8 @@ public class OrderService {
         Map<String, Asset> assets = new HashMap<>();
         if ("SPOT".equals(type) || type == null) {
             String btcAsset = getAssetFreeBalance("BTC");
-            BigDecimal usdtValueBtc = new BigDecimal(btcAsset).multiply(new BigDecimal(getPrice()));
+            String price = getPrice();
+            BigDecimal usdtValueBtc = new BigDecimal(btcAsset).multiply(new BigDecimal(price));
             String usdtValue = usdtValueBtc.round(new MathContext(8)).toPlainString();
             assets.put("BTC", new Asset("BTC", btcAsset, usdtValue));
 
